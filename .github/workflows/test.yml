@@ -3,6 +3,9 @@ name: Test
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
   pull_request:
     branches: [main]
   # 수동 실행 옵션
@@ -46,20 +49,35 @@ jobs:
         run: pnpm lint
 
       - name: Run unit tests
+        id: unit-test
         run: pnpm test:ci
+
+      - name: Upload unit test results
+        if: always() && steps.unit-test.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results
+          path: coverage/
+          retention-days: 14
+          compression-level: 9
+          if-no-files-found: error
 
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps
 
       - name: Run E2E tests
+        id: e2e-test
         run: pnpm test:e2e
 
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v3
+      - name: Upload E2E test results
+        if: always() && steps.e2e-test.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
         with:
-          name: test-results
+          name: playwright-report
           path: |
             playwright-report/
-            coverage/
-          retention-days: 30 
+            test-results/
+          retention-days: 14
+          compression-level: 6
+          if-no-files-found: error
+          include-hidden-files: true 
