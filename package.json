@@ -6,7 +6,7 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint --cache --cache-location ./node_modules/.cache/.eslintcache --format stylish --max-warnings 0",
+    "lint": "next lint --format stylish --max-warnings 0",
     "lint:debug": "eslint --debug 'app/**/*.{js,ts,jsx,tsx}' 'components/**/*.{js,ts,jsx,tsx}' 'lib/**/*.{js,ts,jsx,tsx}'",
     "lint:fix": "eslint --fix 'app/**/*.{js,ts,jsx,tsx}' 'components/**/*.{js,ts,jsx,tsx}' 'lib/**/*.{js,ts,jsx,tsx}' --format stylish",
     "test": "vitest",
