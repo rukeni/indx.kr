@@ -1,6 +1,6 @@
 import { type ComponentProps, type JSX } from 'react';
 
-import { cn } from '@internal/lib/utils';
+import { cn } from '@/lib/utils';
 
 function Skeleton({ className, ...props }: ComponentProps<'div'>): JSX.Element {
   return (
