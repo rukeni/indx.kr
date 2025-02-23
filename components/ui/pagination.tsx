@@ -1,4 +1,4 @@
-import type { Button } from '@internal/components/ui/button';
+import type { Button } from '@/components/ui/button';
 
 import { type ComponentProps, type JSX } from 'react';
 import {
@@ -7,8 +7,8 @@ import {
   MoreHorizontalIcon,
 } from 'lucide-react';
 
-import { cn } from '@internal/lib/utils';
-import { buttonVariants } from '@internal/components/ui/button';
+import { cn } from '@/lib/utils';
+import { buttonVariants } from '@/components/ui/button';
 
 function Pagination({
   className,

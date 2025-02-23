@@ -1,6 +1,6 @@
 import type { ComponentProps, JSX } from 'react';
 
-import { cn } from '@internal/lib/utils';
+import { cn } from '@/lib/utils';
 
 function Card({ className, ...props }: ComponentProps<'div'>): JSX.Element {
   return (

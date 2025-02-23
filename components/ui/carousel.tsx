@@ -14,8 +14,8 @@ import {
   type JSX,
 } from 'react';
 
-import { cn } from '@internal/lib/utils';
-import { Button } from '@internal/components/ui/button';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 type CarouselApi = UseEmblaCarouselType[1];
 type UseCarouselParameters = Parameters<typeof useEmblaCarousel>;

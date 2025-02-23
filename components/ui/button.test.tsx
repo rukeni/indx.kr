@@ -1,8 +1,8 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 
-import { Button } from '@internal/components/ui/button';
+import { render, screen } from '@/lib/test-utils';
 
-import { render, screen } from '../../lib/test-utils';
+import { Button } from './button';
 
 describe('Button', () => {
   it('renders button with correct text', () => {
@@ -16,11 +16,9 @@ describe('Button', () => {
     const handleClick = vi.fn();
 
     render(<Button onClick={handleClick}>Click Me</Button>);
-
     const button = screen.getByRole('button', { name: /click me/i });
 
     await button.click();
-
     expect(handleClick).toHaveBeenCalledTimes(1);
   });
 
