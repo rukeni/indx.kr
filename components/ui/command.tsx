@@ -4,14 +4,14 @@ import { SearchIcon } from 'lucide-react';
 import { Command as CommandPrimitive } from 'cmdk';
 import { type ComponentProps, type JSX } from 'react';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@internal/lib/utils';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from '@internal/components/ui/dialog';
 
 function Command({
   className,

@@ -1,5 +1,7 @@
 'use client';
 
+import type { JSX } from 'react';
+
 import type { Post } from '@internal/lib/blog';
 
 import Link from 'next/link';
@@ -8,7 +10,7 @@ interface PostListProps {
   posts: Post[];
 }
 
-export function PostList({ posts }: PostListProps) {
+export function PostList({ posts }: PostListProps): JSX.Element {
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       {posts.map((post) => (

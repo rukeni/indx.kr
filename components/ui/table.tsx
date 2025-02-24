@@ -2,7 +2,7 @@
 
 import { type ComponentProps, type JSX } from 'react';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@internal/lib/utils';
 
 function Table({ className, ...props }: ComponentProps<'table'>): JSX.Element {
   return (

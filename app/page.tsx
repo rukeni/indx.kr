@@ -1,52 +1,58 @@
-import Image from 'next/image';
+import type { JSX } from 'react';
+
+import { z } from 'zod';
 
 import { getAllPosts } from '@internal/lib/blog';
-import { Button } from '@internal/components/ui/button';
-import { PostList } from '@internal/components/post-list';
+import { columns } from '@/components/table-view/columns';
+import OfflineDetector from '@/components/offline-detector';
+import { tableSchema } from '@/components/table-view/schema';
+import { DataTable } from '@/components/table-view/data-table';
 
-export default async function Home() {
+async function getPostsAsTableData(): Promise<z.infer<typeof tableSchema>[]> {
   const posts = await getAllPosts();
 
+  return z.array(tableSchema).parse(
+    posts.map((post) => ({
+      id: post.slug,
+      title: post.title,
+      status: post.metadata?.status || 'in progress',
+      label: post.category || 'documentation',
+      priority: post.metadata?.priority || 'medium',
+      date: post.date,
+    })),
+  );
+}
+
+export default async function Home(): Promise<JSX.Element> {
+  const tableData = await getPostsAsTableData();
+
   return (
-    <div className="grid min-h-screen grid-rows-[auto,1fr,auto]">
-      <header className="flex items-center justify-between p-6 bg-white">
-        <div className="flex items-center gap-2">
-          <Image
-            src="/logo.svg"
-            alt="Logo"
-            width={32}
-            height={32}
-            className="w-8 h-8"
-          />
-          <span className="text-xl font-bold">indx.kr</span>
-        </div>
-        <nav>
-          <Button variant="ghost">About</Button>
-        </nav>
-      </header>
-      <main className="container mx-auto px-4 py-8">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">Welcome to indx.kr</h1>
-          <p className="text-xl text-gray-600 mb-8">
-            A blog about technology, life, and everything in between.
-          </p>
-          <div className="flex justify-center gap-4">
-            <a
-              href="https://github.com/yourusername"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-600 hover:text-gray-900"
-            >
-              GitHub
-            </a>
+    <main className="container mx-auto flex min-h-screen flex-col items-center px-4 py-8 sm:items-start">
+      <OfflineDetector />
+      <div className="my-16 w-full text-center">
+        <h1 className="mb-4 text-4xl font-bold">Welcome to indx.kr</h1>
+        <p className="mb-8 text-xl text-gray-600">
+          테크, 프로그래밍, 인생, 재테크, 내 의견들
+        </p>
+      </div>
+
+      <div className="w-full">
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold">나의 글 목록들</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              제 생각과 고민들을 확인해보세요
+            </p>
           </div>
         </div>
-        <PostList posts={posts} />
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <Button variant="ghost">Terms</Button>
-        <Button variant="ghost">Privacy</Button>
-      </footer>
-    </div>
+        <DataTable data={tableData} columns={columns} />
+      </div>
+
+      <div id="offline-message" className="hidden">
+        <p className="mt-8 text-center text-red-500">
+          오프라인 상태입니다. 네트워크 연결을 확인해주세요.
+        </p>
+      </div>
+    </main>
   );
 }

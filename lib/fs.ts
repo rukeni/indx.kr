@@ -3,7 +3,7 @@
 import fs from 'fs';
 import path from 'path';
 
-const POSTS_PATH = path.join(process.cwd(), 'app/posts');
+const POSTS_PATH = path.join(process.cwd(), 'app/blog');
 
 interface FileSystem {
   readDirectory: (dirPath: string) => Promise<string[]>;
@@ -39,9 +39,7 @@ export async function getCategories(): Promise<string[]> {
     }
 
     return categories;
-  } catch (error) {
-    console.error('Error getting categories:', error);
-
+  } catch {
     return [];
   }
 }

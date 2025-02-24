@@ -3,7 +3,7 @@
 import { type ComponentProps, type JSX } from 'react';
 import * as SeparatorPrimitive from '@radix-ui/react-separator';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@internal/lib/utils';
 
 function Separator({
   className,

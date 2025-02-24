@@ -1,9 +1,10 @@
+import type { JSX } from 'react';
+
 import { notFound } from 'next/navigation';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 
 import { getPostBySlug } from '@internal/lib/blog';
-
-import { MDXComponents } from '../../../components/MDXComponents';
+import { MDXComponents } from '@internal/components/mdx-components';
 
 interface PostPageProps {
   params: Promise<{
@@ -12,7 +13,9 @@ interface PostPageProps {
   }>;
 }
 
-export default async function PostPage({ params }: PostPageProps) {
+export default async function PostPage({
+  params,
+}: PostPageProps): Promise<JSX.Element | null> {
   const { category, slug } = await params;
   const post = await getPostBySlug(category, decodeURIComponent(slug));
 

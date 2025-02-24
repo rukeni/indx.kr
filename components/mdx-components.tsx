@@ -1,3 +1,8 @@
+import type { JSX } from 'react';
+import type { ImageProps } from 'next/image';
+
+import Link from 'next/link';
+import Image from 'next/image';
 import { Highlight } from 'prism-react-renderer';
 
 const nebulaTheme = {
@@ -45,12 +50,16 @@ const nebulaTheme = {
   ],
 };
 
-const Pre = ({ children }: { children: React.ReactNode }) => (
+const Pre = ({ children }: { children: React.ReactNode }): JSX.Element => (
   <pre className="overflow-auto p-4 rounded-lg bg-[#1b1e2b]">{children}</pre>
 );
 
-const Code = (props: any) => {
-  const { children, className } = props;
+interface CodeProps {
+  children: string;
+  className?: string;
+}
+
+const Code = ({ children, className }: CodeProps): JSX.Element => {
   const language = className ? className.replace('language-', '') : '';
 
   if (!className) {
@@ -62,11 +71,7 @@ const Code = (props: any) => {
   }
 
   return (
-    <Highlight
-      code={children as string}
-      language={language as string}
-      theme={nebulaTheme}
-    >
+    <Highlight code={children} language={language} theme={nebulaTheme}>
       {({ className, style, tokens, getLineProps, getTokenProps }) => (
         <Pre>
           <code
@@ -90,4 +95,38 @@ const Code = (props: any) => {
 export const MDXComponents = {
   pre: Pre,
   code: Code,
+  Image: (props: ImageProps): JSX.Element => (
+    <Image
+      {...props}
+      alt={props.alt || ''}
+      className="rounded-lg"
+      loading="lazy"
+    />
+  ),
+  a: ({
+    href,
+    children,
+  }: {
+    href: string;
+    children: React.ReactNode;
+  }): JSX.Element => {
+    if (href.startsWith('http')) {
+      return (
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-primary hover:underline"
+        >
+          {children}
+        </a>
+      );
+    }
+
+    return (
+      <Link href={href} className="text-primary hover:underline">
+        {children}
+      </Link>
+    );
+  },
 };

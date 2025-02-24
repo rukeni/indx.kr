@@ -5,8 +5,8 @@ import type { ComponentProps, JSX } from 'react';
 import { DayPicker } from 'react-day-picker';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-import { cn } from '@/lib/utils';
-import { buttonVariants } from '@/components/ui/button';
+import { cn } from '@internal/lib/utils';
+import { buttonVariants } from '@internal/components/ui/button';
 
 function Calendar({
   className,

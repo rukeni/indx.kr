@@ -12,6 +12,8 @@ export type Post = {
   date: string;
   description: string;
   content: string;
+  status?: 'backlog' | 'todo' | 'in progress' | 'done' | 'canceled';
+  priority?: 'low' | 'medium' | 'high';
   metadata?: Record<string, unknown>;
 };
 
@@ -37,6 +39,8 @@ export async function getAllPosts(): Promise<Post[]> {
           koreanSlug: data.koreanSlug,
           category,
           content,
+          status: data.status || 'in progress',
+          priority: data.priority || 'medium',
         } as Post);
       }
     }
@@ -44,9 +48,7 @@ export async function getAllPosts(): Promise<Post[]> {
     return posts.sort(
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
     );
-  } catch (error) {
-    console.error('Error getting all posts:', error);
-
+  } catch {
     return [];
   }
 }

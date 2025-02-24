@@ -3,7 +3,7 @@
 import * as SliderPrimitive from '@radix-ui/react-slider';
 import { useMemo, type ComponentProps, type JSX } from 'react';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@internal/lib/utils';
 
 function Slider({
   className,
