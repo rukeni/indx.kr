@@ -9,8 +9,8 @@ import {
   type JSX,
 } from 'react';
 
-import { cn } from '@/lib/utils';
-import { toggleVariants } from '@/components/ui/toggle';
+import { cn } from '@internal/lib/utils';
+import { toggleVariants } from '@internal/components/ui/toggle';
 
 const ToggleGroupContext = createContext<VariantProps<typeof toggleVariants>>({
   size: 'default',

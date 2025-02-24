@@ -3,7 +3,7 @@
 import { type ComponentProps, type JSX } from 'react';
 import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@internal/lib/utils';
 
 function ScrollArea({
   className,

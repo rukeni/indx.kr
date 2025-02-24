@@ -3,7 +3,7 @@
 import { type ComponentProps, type JSX } from 'react';
 import * as ProgressPrimitive from '@radix-ui/react-progress';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@internal/lib/utils';
 
 function Progress({
   className,
