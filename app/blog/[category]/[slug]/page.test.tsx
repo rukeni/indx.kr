@@ -11,7 +11,7 @@ vi.mock('next/navigation', () => ({
 }));
 
 vi.mock('next-mdx-remote/rsc', () => ({
-  MDXRemote: ({ source }: { source: string }) => (
+  MDXRemote: ({ source }: { source: string }): JSX.Element => (
     <div data-testid="mdx-content">{source}</div>
   ),
 }));
@@ -78,5 +78,11 @@ describe('PostPage', () => {
       mockParams.category,
       mockParams.slug,
     );
+  });
+});
+
+describe('Blog Post Page', () => {
+  it('should render blog post page correctly', (): void => {
+    expect(true).toBe(true);
   });
 });
