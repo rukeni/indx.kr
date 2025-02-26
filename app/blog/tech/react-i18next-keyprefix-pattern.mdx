@@ -1,0 +1,125 @@
+---
+title: '단순한 원칙을 지닌 "react-i18next" keyPrefix 패턴 사례 공유'
+date: '2025-02-26'
+description: '복잡한 추상화 대신 KISS 원칙을 따르는 react-i18next keyPrefix 패턴 활용 경험 공유'
+koreanSlug: 'react-i18next-keyprefix-pattern'
+status: 'done'
+priority: 'high'
+tags: ['React', 'i18n', '다국어', '패턴', '개발경험']
+---
+
+## 들어가며
+
+이전 프로젝트에서 발견한 단순하지만 강력한 keyPrefix 패턴에 대한 메모. 과도한 추상화나 복잡한 구조 대신 KISS(Keep It Simple, Stupid) 원칙을 따르는 접근법이 왜 더 효과적인지 기록해둠.
+
+## 기본 패턴 코드
+
+```tsx
+// components/header/navigation/login-button.tsx
+// keyPrefix가 파일경로를 의미한다.
+const { t: translate } = useTranslation('translation', {
+  keyPrefix: 'header.navigation.login-button'
+});
+
+return <button>{translate('button-text')}</button>; // 실제 키: 'header.navigation.login-button.button-text'
+```
+
+## 왜 이 패턴이 좋은가? (나중에 팀원들 설득할 때 사용할 포인트)
+
+1. **파일 경로와 번역 키 일치 = 직관적**
+    - 파일: `components/header/navigation/login-button.tsx`
+    - 키: `header.navigation.login-button`
+    - 개발자가 파일만 봐도 번역 키 위치 즉시 유추 가능
+2. **신규 개발자 온보딩 시간 최소화**
+    - "keyPrefix는 파일 경로 구조를 따르면 돼" → 끝. 다른 설명 필요 없음.
+    - 복잡한 매핑이나 추상화 이해할 필요 없음
+3. **내가 겪은 리팩토링 시나리오**
+    - 파일 위치 변경 시 keyPrefix도 함께 변경 → 번역 키가 항상 최신 구조 반영
+    - 이건 단점이 아니라 장점! 파일 변경과 번역 키 변경이 항상 동기화됨
+4. **다른 개발자들의 실수 방지**
+    - 규칙이 단순해서 팀원들이 실수할 여지가 적음
+    - PR 리뷰 시 금방 확인 가능
+
+## 다른 블로그 글에서 시도했던 방식
+
+```tsx
+// TranslationContext.tsx, i18n-keys.ts, 여러 네임스페이스 등
+const { t: common } = useTranslation('common');
+const { t } = useTranslation('header', { keyPrefix: 'navigation' });
+import { KEYS } from '../i18n-keys';
+
+return (
+  <>
+    <button>{t(KEYS.login)}</button>
+    <p>{common(KEYS.common.confirm)}</p>
+  </>
+);
+```
+
+이런 방식의 문제점 (나중에 기억할 것):
+
+- 여러 파일 수정 필요 (실제 컴포넌트 + 키 정의 파일 + 컨텍스트 등)
+- 키가 분산되어 있어 전체 구조 파악 어려움
+- 신규 개발자 온보딩에 시간 소요 (너무 많은 규칙과 패턴)
+- YAGNI 원칙 위반 (지금 당장 필요하지 않은 복잡성 추가)
+
+## 실제 사용 시나리오 (내가 구현했던 방식)
+
+1. **번역 파일 구조**
+
+```json
+// ko.json
+{
+  "header": {
+    "navigation": {
+      "login": "로그인", // header폴더 - navigation.tsx의 login 텍스트
+      "logout": "로그아웃", // header폴더 - navigation.tsx의 logout 텍스트
+      "signup": "회원가입" // header폴더 - navigation.tsx의 signup 텍스트
+    }
+  },
+  "address-bar": {
+    "search": {
+      "label": "라벨", // address-bar폴더 - search.tsx의 label 텍스트
+      "placeholder": "플레이스홀더" // address-bar폴더 - search.tsx의 placeholder 텍스트
+    }
+  }
+}
+```
+
+2. **공통 텍스트 처리**
+
+```tsx
+// 별도 네임스페이스 필요 없음
+// 하나의 컴포넌트에는 하나의 useTranslation만 있으면 된다.
+const { t:translate } = useTranslation('translation', { keyPrefix: 'header.navigation' });
+
+return (
+  <>
+    <button>{translate('login')}</button>
+    <button>{translate('signup')}</button>
+  </>
+);
+```
+
+## 까먹지 말아야 할 핵심 포인트
+
+1. **단순함이 최고의 구조**
+    - 복잡한 추상화는 결국 유지보수 부담
+    - 지금은 완벽해 보이는 구조도 6개월 후에는 레거시가 됨
+2. **팀원 경험 최우선**
+    - 내가 이해하는 구조보다 신규 개발자가 쉽게 이해할 수 있는 구조가 중요
+    - "이 코드를 처음 보는 사람이 5초 안에 이해할 수 있는가?"
+    - 휴가 다녀온 나와 팀원을 괴롭히지 말자
+3. **확장성은 필요할 때 추가**
+    - 지금 당장 필요하지 않은 패턴은 나중에 필요할 때 추가해도 됨
+    - YAGNI (You Aren't Gonna Need It) 원칙 기억하기
+4. **추상화의 대가**
+    - 모든 추상화는 비용이 있음 (학습 곡선, 유지보수, 디버깅 어려움)
+    - 추상화가 주는 이득이 그 비용보다 클 때만 도입해야 함
+
+---
+
+결론: 가끔 가장 단순한 해결책이 최선의 해결책이다. 일단 단순하게 시작하고, 정말 필요할 때만 복잡성을 추가하자. 내가 다음 프로젝트에서도 이 패턴을 적용할 것인가? 100% 그렇다.
+
+> PS. 나는 이 패턴으로 디자인토큰을 구현하고 각 컴포넌트에 주입하는 걸 좋아한다. 조만간 한번 다뤄볼 것임.
+> 
