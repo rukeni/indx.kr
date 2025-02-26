@@ -6,9 +6,11 @@ import type { Post } from '@internal/lib/blog';
 
 import { useMemo } from 'react';
 import { useState, type FC } from 'react';
-import { ChevronDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { ChevronDown, Search, Clock, BookOpen } from 'lucide-react';
 
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DataTableColumnHeader } from '@/components/table-view/data-table-column-header';
 import {
@@ -37,12 +39,13 @@ type SortConfig = {
 
 const BlogTable: FC<BlogTableProps> = ({ posts }): JSX.Element => {
   const router = useRouter();
-  const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
-  const [priorityFilter, setPriorityFilter] = useState<string | null>(null);
+  const [seriesFilter, setSeriesFilter] = useState<string | null>(null);
+  const [tagFilter, setTagFilter] = useState<string | null>(null);
   const [sortConfig, setSortConfig] = useState<SortConfig>({
-    key: null,
-    direction: null,
+    key: 'date',
+    direction: 'desc',
   });
 
   const handleSort = (key: keyof Post): void => {
@@ -52,11 +55,44 @@ const BlogTable: FC<BlogTableProps> = ({ posts }): JSX.Element => {
     }));
   };
 
+  // 모든 시리즈와 태그 목록 추출 (중복 제거)
+  const allSeries = useMemo(() => {
+    const seriesSet = new Set<string>();
+
+    posts.forEach((post) => {
+      if (post.series) seriesSet.add(post.series);
+    });
+
+    return Array.from(seriesSet);
+  }, [posts]);
+
+  const allTags = useMemo(() => {
+    const tagsSet = new Set<string>();
+
+    posts.forEach((post) => {
+      if (post.tags) {
+        post.tags.forEach((tag) => tagsSet.add(tag));
+      }
+    });
+
+    return Array.from(tagsSet);
+  }, [posts]);
+
   const filteredAndSortedPosts = useMemo(() => {
     let result = posts.filter((post) => {
-      if (statusFilter && post.status !== statusFilter) return false;
+      // 검색어 필터링
+      if (
+        searchQuery &&
+        !post.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
+        !post.description.toLowerCase().includes(searchQuery.toLowerCase())
+      ) {
+        return false;
+      }
+
       if (categoryFilter && post.category !== categoryFilter) return false;
-      if (priorityFilter && post.priority !== priorityFilter) return false;
+      if (seriesFilter && post.series !== seriesFilter) return false;
+      if (tagFilter && (!post.tags || !post.tags.includes(tagFilter)))
+        return false;
 
       return true;
     });
@@ -77,93 +113,129 @@ const BlogTable: FC<BlogTableProps> = ({ posts }): JSX.Element => {
     }
 
     return result;
-  }, [posts, statusFilter, categoryFilter, priorityFilter, sortConfig]);
+  }, [posts, searchQuery, categoryFilter, seriesFilter, tagFilter, sortConfig]);
 
-  const getStatusLabel = (status: string): string => {
-    switch (status) {
-      case 'backlog':
-        return '연재 예정';
+  const getCategoryLabel = (category: string): string => {
+    switch (category) {
+      case 'tech':
+        return '기술';
 
-      case 'todo':
-        return '작성 예정';
+      case 'life':
+        return '일상';
 
-      case 'in progress':
-        return '작성 중';
-
-      case 'done':
-        return '발행됨';
-
-      case 'canceled':
-        return '비공개';
+      case 'review':
+        return '리뷰';
 
       default:
-        return '작성 중';
+        return category;
     }
   };
 
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>
-              <DataTableColumnHeader
-                title="제목"
-                onClick={() => handleSort('title')}
-                isSorted={sortConfig.key === 'title'}
-                sortDirection={
-                  sortConfig.key === 'title' ? sortConfig.direction : null
-                }
-              />
-            </TableHead>
-            <TableHead>
-              <div className="flex items-center gap-2">
+    <div className="space-y-4">
+      <div className="flex flex-col gap-4 sm:flex-row items-center justify-between">
+        <div className="relative w-full sm:max-w-xs">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="제목이나 내용 검색..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-8 w-full"
+          />
+        </div>
+        <div className="flex flex-wrap items-center gap-2 self-end">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                카테고리:{' '}
+                {categoryFilter ? getCategoryLabel(categoryFilter) : '전체'}{' '}
+                <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setCategoryFilter(null)}>
+                전체
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setCategoryFilter('tech')}>
+                기술
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setCategoryFilter('life')}>
+                일상
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setCategoryFilter('review')}>
+                리뷰
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {allSeries.length > 0 && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  시리즈: {seriesFilter || '전체'}{' '}
+                  <ChevronDown className="ml-2 h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className="max-h-48 overflow-y-auto"
+              >
+                <DropdownMenuItem onClick={() => setSeriesFilter(null)}>
+                  전체
+                </DropdownMenuItem>
+                {allSeries.map((series) => (
+                  <DropdownMenuItem
+                    key={series}
+                    onClick={() => setSeriesFilter(series)}
+                  >
+                    {series}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+
+          {allTags.length > 0 && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  태그: {tagFilter || '전체'}{' '}
+                  <ChevronDown className="ml-2 h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className="max-h-48 overflow-y-auto"
+              >
+                <DropdownMenuItem onClick={() => setTagFilter(null)}>
+                  전체
+                </DropdownMenuItem>
+                {allTags.map((tag) => (
+                  <DropdownMenuItem key={tag} onClick={() => setTagFilter(tag)}>
+                    {tag}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
+      </div>
+
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[45%]">
                 <DataTableColumnHeader
-                  title="상태"
-                  onClick={() => handleSort('status')}
-                  isSorted={sortConfig.key === 'status'}
+                  title="제목"
+                  onClick={() => handleSort('title')}
+                  isSorted={sortConfig.key === 'title'}
                   sortDirection={
-                    sortConfig.key === 'status' ? sortConfig.direction : null
+                    sortConfig.key === 'title' ? sortConfig.direction : null
                   }
                 />
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="ml-2 h-8">
-                      <ChevronDown className="h-4 w-4" />
-                      <span className="sr-only">상태 필터</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start">
-                    <DropdownMenuItem onClick={() => setStatusFilter(null)}>
-                      전체
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => setStatusFilter('backlog')}
-                    >
-                      연재 예정
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setStatusFilter('todo')}>
-                      작성 예정
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => setStatusFilter('in progress')}
-                    >
-                      작성 중
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setStatusFilter('done')}>
-                      완료
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => setStatusFilter('canceled')}
-                    >
-                      비공개
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </TableHead>
-            <TableHead>
-              <div className="flex items-center gap-2">
+              </TableHead>
+              <TableHead>
                 <DataTableColumnHeader
                   title="카테고리"
                   onClick={() => handleSort('category')}
@@ -172,110 +244,139 @@ const BlogTable: FC<BlogTableProps> = ({ posts }): JSX.Element => {
                     sortConfig.key === 'category' ? sortConfig.direction : null
                   }
                 />
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="ml-2 h-8">
-                      <ChevronDown className="h-4 w-4" />
-                      <span className="sr-only">카테고리 필터</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start">
-                    <DropdownMenuItem onClick={() => setCategoryFilter(null)}>
-                      전체
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setCategoryFilter('tech')}>
-                      기술
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setCategoryFilter('life')}>
-                      일상
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => setCategoryFilter('review')}
-                    >
-                      리뷰
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </TableHead>
-            <TableHead>
-              <div className="flex items-center gap-2">
+              </TableHead>
+              <TableHead className="hidden md:table-cell">
                 <DataTableColumnHeader
-                  title="우선순위"
-                  onClick={() => handleSort('priority')}
-                  isSorted={sortConfig.key === 'priority'}
+                  title="시리즈"
+                  onClick={() => handleSort('series')}
+                  isSorted={sortConfig.key === 'series'}
                   sortDirection={
-                    sortConfig.key === 'priority' ? sortConfig.direction : null
+                    sortConfig.key === 'series' ? sortConfig.direction : null
                   }
                 />
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="ml-2 h-8">
-                      <ChevronDown className="h-4 w-4" />
-                      <span className="sr-only">우선순위 필터</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start">
-                    <DropdownMenuItem onClick={() => setPriorityFilter(null)}>
-                      전체
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setPriorityFilter('high')}>
-                      높음
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => setPriorityFilter('medium')}
-                    >
-                      중간
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setPriorityFilter('low')}>
-                      낮음
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </TableHead>
-            <TableHead>
-              <DataTableColumnHeader
-                title="작성일"
-                onClick={() => handleSort('date')}
-                isSorted={sortConfig.key === 'date'}
-                sortDirection={
-                  sortConfig.key === 'date' ? sortConfig.direction : null
-                }
-              />
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredAndSortedPosts.length > 0 ? (
-            filteredAndSortedPosts.map((post) => (
-              <TableRow
-                key={`${post.category}/${post.slug}`}
-                className="cursor-pointer hover:bg-muted/50"
-                onClick={() => {
-                  router.push(`/blog/${post.category}/${post.slug}`);
-                }}
-              >
-                <TableCell className="font-medium">{post.title}</TableCell>
-                <TableCell>
-                  {getStatusLabel(post.status || 'in progress')}
-                </TableCell>
-                <TableCell className="capitalize">{post.category}</TableCell>
-                <TableCell>{post.priority || '중간'}</TableCell>
-                <TableCell>
-                  {new Date(post.date).toLocaleDateString()}
+              </TableHead>
+              <TableHead className="hidden sm:table-cell w-36">
+                <DataTableColumnHeader
+                  title="태그"
+                  className="justify-center"
+                />
+              </TableHead>
+              <TableHead className="w-24">
+                <DataTableColumnHeader
+                  title="작성일"
+                  onClick={() => handleSort('date')}
+                  isSorted={sortConfig.key === 'date'}
+                  sortDirection={
+                    sortConfig.key === 'date' ? sortConfig.direction : null
+                  }
+                />
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredAndSortedPosts.length > 0 ? (
+              filteredAndSortedPosts.map((post) => (
+                <TableRow
+                  key={`${post.category}/${post.slug}`}
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => {
+                    router.push(
+                      `/blog/${post.category}/${post.koreanSlug || post.slug}`,
+                    );
+                  }}
+                >
+                  <TableCell className="font-medium">
+                    <div>
+                      <div className="font-semibold">{post.title}</div>
+                      <div className="text-muted-foreground text-sm line-clamp-1">
+                        {post.description}
+                      </div>
+                      <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                        <div className="flex items-center">
+                          <Clock className="h-3 w-3 mr-1" />
+                          {post.readingTime}분 소요
+                        </div>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>{getCategoryLabel(post.category)}</TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    {post.series ? (
+                      <div className="flex items-center">
+                        <BookOpen className="h-4 w-4 mr-1.5" />
+                        <span>{post.series}</span>
+                      </div>
+                    ) : (
+                      '-'
+                    )}
+                  </TableCell>
+                  <TableCell className="hidden sm:table-cell">
+                    <div className="flex flex-wrap gap-1 max-w-xs justify-center">
+                      {post.tags && post.tags.length > 0
+                        ? post.tags.slice(0, 2).map((tag) => (
+                            <Badge
+                              key={tag}
+                              variant="secondary"
+                              className="text-xs"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setTagFilter(tag);
+                              }}
+                            >
+                              {tag}
+                            </Badge>
+                          ))
+                        : '-'}
+                      {post.tags && post.tags.length > 2 && (
+                        <Badge variant="outline" className="text-xs">
+                          +{post.tags.length - 2}
+                        </Badge>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {new Date(post.date).toLocaleDateString('ko-KR', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                    })}
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center py-6">
+                  {searchQuery ||
+                  categoryFilter ||
+                  seriesFilter ||
+                  tagFilter ? (
+                    <div>
+                      <p className="font-medium">검색 결과가 없습니다.</p>
+                      <p className="text-muted-foreground text-sm mt-1">
+                        다른 검색어를 입력하거나 필터를 조정해보세요.
+                      </p>
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="font-medium">아직 작성된 글이 없습니다.</p>
+                      <p className="text-muted-foreground text-sm mt-1">
+                        첫 글을 작성해보세요!
+                      </p>
+                    </div>
+                  )}
                 </TableCell>
               </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={5} className="text-center py-4">
-                검색 결과가 없습니다.
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      <div className="text-sm text-muted-foreground text-right">
+        총 {filteredAndSortedPosts.length}개 글{' '}
+        {posts.length > filteredAndSortedPosts.length
+          ? `(전체 ${posts.length}개 중)`
+          : ''}
+      </div>
     </div>
   );
 };

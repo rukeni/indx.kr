@@ -15,6 +15,9 @@ export type Post = {
   status?: 'backlog' | 'todo' | 'in progress' | 'done' | 'canceled';
   priority?: 'low' | 'medium' | 'high';
   metadata?: Record<string, unknown>;
+  tags?: string[];
+  readingTime?: number; // 분 단위
+  series?: string;
 };
 
 export async function getAllPosts(): Promise<Post[]> {
@@ -33,6 +36,10 @@ export async function getAllPosts(): Promise<Post[]> {
         const { data, content } = matter(source);
         const slug = file.replace(/\.mdx?$/, '');
 
+        // 읽기 시간 자동 계산 (평균 읽기 속도: 분당 200단어)
+        const wordCount = content.trim().split(/\s+/).length;
+        const readingTime = Math.ceil(wordCount / 200);
+
         posts.push({
           ...data,
           slug,
@@ -41,6 +48,10 @@ export async function getAllPosts(): Promise<Post[]> {
           content,
           status: data.status || 'in progress',
           priority: data.priority || 'medium',
+          // 새로운 필드들
+          tags: data.tags || [],
+          readingTime: data.readingTime || readingTime,
+          series: data.series || null,
         } as Post);
       }
     }
@@ -69,11 +80,19 @@ export async function getPostBySlug(
 
       const { data, content } = matter(source);
 
+      // 읽기 시간 자동 계산 (평균 읽기 속도: 분당 200단어)
+      const wordCount = content.trim().split(/\s+/).length;
+      const readingTime = Math.ceil(wordCount / 200);
+
       return {
         ...data,
         slug,
         category,
         content,
+        // 새로운 필드들
+        tags: data.tags || [],
+        readingTime: data.readingTime || readingTime,
+        series: data.series || null,
       } as Post;
     }
 
@@ -89,12 +108,20 @@ export async function getPostBySlug(
         const { content } = matter(source);
         const originalSlug = file.replace(/\.mdx?$/, '');
 
+        // 읽기 시간 자동 계산 (평균 읽기 속도: 분당 200단어)
+        const wordCount = content.trim().split(/\s+/).length;
+        const readingTime = Math.ceil(wordCount / 200);
+
         return {
           ...data,
           slug: originalSlug,
           koreanSlug: data.koreanSlug,
           category,
           content,
+          // 새로운 필드들
+          tags: data.tags || [],
+          readingTime: data.readingTime || readingTime,
+          series: data.series || null,
         } as Post;
       }
     }
@@ -118,11 +145,19 @@ export async function getPostsByCategory(category: string): Promise<Post[]> {
       const { data, content } = matter(source);
       const slug = file.replace(/\.mdx?$/, '');
 
+      // 읽기 시간 자동 계산 (평균 읽기 속도: 분당 200단어)
+      const wordCount = content.trim().split(/\s+/).length;
+      const readingTime = Math.ceil(wordCount / 200);
+
       posts.push({
         ...data,
         slug,
         category,
         content,
+        // 새로운 필드들
+        tags: data.tags || [],
+        readingTime: data.readingTime || readingTime,
+        series: data.series || null,
       } as Post);
     }
 
