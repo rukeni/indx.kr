@@ -1,16 +1,16 @@
 'use client';
 
-import type { JSX } from 'react';
+import type { ReactNode } from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
 
 import type { TableData } from '@internal/components/table-view/schema';
 
-import Link from 'next/link';
+import { Clock, BookOpen } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 
-import { labels, priorities, statuses } from './data';
+import { categories } from './data';
 import { DataTableRowActions } from './data-table-row-actions';
 import { DataTableColumnHeader } from './data-table-column-header';
 
@@ -28,28 +28,15 @@ export const columns: ColumnDef<TableData>[] = [
         className="translate-y-[2px]"
       />
     ),
-    cell: ({ row }) => (
+    cell: ({ row }): ReactNode => (
       <Checkbox
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
         aria-label="행 선택"
         className="translate-y-[2px]"
+        onClick={(e) => e.stopPropagation()} // 상위 이벤트 전파 방지
       />
     ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
-    accessorKey: 'id',
-    header: ({ column }) => (
-      <DataTableColumnHeader
-        title="할 일"
-        onClick={() => column.toggleSorting()}
-        isSorted={column.getIsSorted() !== false}
-        sortDirection={column.getIsSorted() || null}
-      />
-    ),
-    cell: ({ row }) => <div className="w-[80px]">{row.getValue('id')}</div>,
     enableSorting: false,
     enableHiding: false,
   },
@@ -63,102 +50,25 @@ export const columns: ColumnDef<TableData>[] = [
         sortDirection={column.getIsSorted() || null}
       />
     ),
-    cell: ({ row }): JSX.Element => {
-      const label = labels.find((label) => label.value === row.original.label);
-      const status = statuses.find(
-        (status) => status.value === row.getValue('status'),
-      );
-
+    cell: ({ row }): ReactNode => {
       return (
-        <div className="flex flex-col gap-1">
-          <Link
-            href={`/blog/tech/${row.original.id.toLowerCase()}`}
-            className="font-medium hover:underline"
-          >
-            {row.getValue('title')}
-          </Link>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            {label && <Badge variant="outline">{label.label}</Badge>}
-            {status && status.icon && (
-              <div className="flex items-center gap-1">
-                <status.icon className="h-3 w-3" />
-                <span>{status.label}</span>
-              </div>
-            )}
-            {row.original.date && (
-              <span className="text-muted-foreground">{row.original.date}</span>
-            )}
+        <div className="flex flex-col">
+          <div className="font-medium">{row.getValue('title')}</div>
+          {row.original.description && (
+            <div className="text-sm text-muted-foreground line-clamp-1">
+              {row.original.description}
+            </div>
+          )}
+          <div className="flex items-center mt-1 text-xs text-muted-foreground">
+            <Clock className="h-3 w-3 mr-1" />
+            {row.original.readingTime ?? 5}분 소요
           </div>
         </div>
       );
     },
   },
   {
-    accessorKey: 'status',
-    header: ({ column }) => (
-      <DataTableColumnHeader
-        title="상태"
-        onClick={() => column.toggleSorting()}
-        isSorted={column.getIsSorted() !== false}
-        sortDirection={column.getIsSorted() || null}
-      />
-    ),
-    cell: ({ row }): JSX.Element | null => {
-      const status = statuses.find(
-        (status) => status.value === row.getValue('status'),
-      );
-
-      if (!status) {
-        return null;
-      }
-
-      return (
-        <div className="flex w-[100px] items-center">
-          {status.icon && (
-            <status.icon className="mr-2 h-4 w-4 text-muted-foreground" />
-          )}
-          <span>{status.label}</span>
-        </div>
-      );
-    },
-    filterFn: (row, id, value): boolean => {
-      return value.includes(row.getValue(id));
-    },
-  },
-  {
-    accessorKey: 'priority',
-    header: ({ column }) => (
-      <DataTableColumnHeader
-        title="우선순위"
-        onClick={() => column.toggleSorting()}
-        isSorted={column.getIsSorted() !== false}
-        sortDirection={column.getIsSorted() || null}
-      />
-    ),
-    cell: ({ row }): JSX.Element | null => {
-      const priority = priorities.find(
-        (priority) => priority.value === row.getValue('priority'),
-      );
-
-      if (!priority) {
-        return null;
-      }
-
-      return (
-        <div className="flex items-center">
-          {priority.icon && (
-            <priority.icon className="mr-2 h-4 w-4 text-muted-foreground" />
-          )}
-          <span>{priority.label}</span>
-        </div>
-      );
-    },
-    filterFn: (row, id, value): boolean => {
-      return value.includes(row.getValue(id));
-    },
-  },
-  {
-    accessorKey: 'label',
+    accessorKey: 'category',
     header: ({ column }) => (
       <DataTableColumnHeader
         title="카테고리"
@@ -167,18 +77,19 @@ export const columns: ColumnDef<TableData>[] = [
         sortDirection={column.getIsSorted() || null}
       />
     ),
-    cell: ({ row }): JSX.Element | null => {
-      const label = labels.find(
-        (label) => label.value === row.getValue('label'),
+    cell: ({ row }): ReactNode => {
+      const category = categories.find(
+        (cat) => cat.value === row.getValue('category'),
       );
 
-      if (!label) {
-        return null;
-      }
+      const label = category?.label || row.getValue('category');
 
       return (
         <div className="flex items-center">
-          <Badge variant="outline">{label.label}</Badge>
+          {category?.icon && (
+            <category.icon className="mr-2 h-4 w-4 text-muted-foreground" />
+          )}
+          <span>{label}</span>
         </div>
       );
     },
@@ -187,7 +98,103 @@ export const columns: ColumnDef<TableData>[] = [
     },
   },
   {
+    accessorKey: 'series',
+    header: ({ column }) => (
+      <DataTableColumnHeader
+        title="시리즈"
+        onClick={() => column.toggleSorting()}
+        isSorted={column.getIsSorted() !== false}
+        sortDirection={column.getIsSorted() || null}
+      />
+    ),
+    cell: ({ row }): ReactNode => {
+      const series = row.getValue('series');
+
+      return (
+        <div className="flex items-center">
+          {series ? (
+            <>
+              <BookOpen className="mr-2 h-4 w-4 text-muted-foreground" />
+              <span>{String(series)}</span>
+            </>
+          ) : (
+            <span className="text-muted-foreground">-</span>
+          )}
+        </div>
+      );
+    },
+    filterFn: (row, id, value): boolean => {
+      return value.includes(row.getValue(id));
+    },
+  },
+  {
+    accessorKey: 'tags',
+    header: ({ column }) => (
+      <DataTableColumnHeader
+        title="태그"
+        onClick={() => column.toggleSorting()}
+        isSorted={column.getIsSorted() !== false}
+        sortDirection={column.getIsSorted() || null}
+      />
+    ),
+    cell: ({ row }): ReactNode => {
+      const tags = row.getValue('tags') as string[] | undefined;
+
+      return (
+        <div className="flex flex-wrap gap-1 max-w-xs">
+          {tags && tags.length > 0 ? (
+            <>
+              {tags.slice(0, 2).map((tag) => (
+                <Badge key={tag} variant="secondary" className="text-xs">
+                  {tag}
+                </Badge>
+              ))}
+              {tags.length > 2 && (
+                <Badge variant="outline" className="text-xs">
+                  +{tags.length - 2}
+                </Badge>
+              )}
+            </>
+          ) : (
+            <span className="text-muted-foreground">-</span>
+          )}
+        </div>
+      );
+    },
+    filterFn: (row, id, value): boolean => {
+      const rowValue = row.getValue(id) as string[] | undefined;
+
+      if (!rowValue) return false;
+
+      return rowValue.some((tag) => value.includes(tag));
+    },
+  },
+  {
+    accessorKey: 'date',
+    header: ({ column }) => (
+      <DataTableColumnHeader
+        title="작성일"
+        onClick={() => column.toggleSorting()}
+        isSorted={column.getIsSorted() !== false}
+        sortDirection={column.getIsSorted() || null}
+      />
+    ),
+    cell: ({ row }): ReactNode => (
+      <span>
+        {new Date(row.getValue('date')).toLocaleDateString('ko-KR', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+        })}
+      </span>
+    ),
+  },
+  {
     id: 'actions',
-    cell: ({ row }): JSX.Element => <DataTableRowActions row={row} />,
+    cell: ({ row }): ReactNode => (
+      <div onClick={(e) => e.stopPropagation()}>
+        <DataTableRowActions row={row} />
+      </div>
+    ),
   },
 ];

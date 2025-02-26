@@ -8,9 +8,9 @@ import { X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
-import { priorities, statuses } from './data';
 import { DataTableViewOptions } from './data-table-view-options';
 import { DataTableFacetedFilter } from './data-table-faceted-filter';
+import { categories, postSeries, postTags, readingTimes } from './data';
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -25,25 +25,39 @@ export function DataTableToolbar<TData>({
     <div className="flex items-center justify-between">
       <div className="flex flex-1 items-center space-x-2">
         <Input
-          placeholder="할 일 검색..."
+          placeholder="제목 검색..."
           value={(table.getColumn('title')?.getFilterValue() as string) ?? ''}
           onChange={(event) =>
             table.getColumn('title')?.setFilterValue(event.target.value)
           }
           className="h-8 w-[150px] lg:w-[250px]"
         />
-        {table.getColumn('status') && (
+        {table.getColumn('category') && (
           <DataTableFacetedFilter
-            column={table.getColumn('status')}
-            title="상태"
-            options={statuses}
+            column={table.getColumn('category')}
+            title="카테고리"
+            options={categories}
           />
         )}
-        {table.getColumn('priority') && (
+        {table.getColumn('series') && (
           <DataTableFacetedFilter
-            column={table.getColumn('priority')}
-            title="우선순위"
-            options={priorities}
+            column={table.getColumn('series')}
+            title="시리즈"
+            options={postSeries}
+          />
+        )}
+        {table.getColumn('tags') && (
+          <DataTableFacetedFilter
+            column={table.getColumn('tags')}
+            title="태그"
+            options={postTags}
+          />
+        )}
+        {table.getColumn('readingTime') && (
+          <DataTableFacetedFilter
+            column={table.getColumn('readingTime')}
+            title="읽기 시간"
+            options={readingTimes}
           />
         )}
         {isFiltered && (

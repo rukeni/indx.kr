@@ -4,11 +4,15 @@ import type { JSX } from 'react';
 import type {
   ColumnDef,
   ColumnFiltersState,
+  Row,
   SortingState,
   VisibilityState,
 } from '@tanstack/react-table';
 
+import type { TableData } from './schema';
+
 import * as React from 'react';
+import { useRouter } from 'next/navigation';
 import {
   flexRender,
   getCoreRowModel,
@@ -41,6 +45,7 @@ export function DataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>): JSX.Element {
+  const router = useRouter();
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
@@ -71,6 +76,18 @@ export function DataTable<TData, TValue>({
     getFacetedUniqueValues: getFacetedUniqueValues(),
   });
 
+  // 블로그 포스트 페이지로 이동하는 함수
+  const navigateToPost = (row: Row<TData>) => {
+    // 타입 단언을 사용하여 TableData로 변환
+    const data = row.original as unknown as TableData;
+
+    if (data.category && data.slug) {
+      const targetSlug = data.koreanSlug || data.slug;
+
+      router.push(`/blog/${data.category}/${targetSlug}`);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <DataTableToolbar table={table} />
@@ -100,6 +117,8 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => navigateToPost(row)}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
