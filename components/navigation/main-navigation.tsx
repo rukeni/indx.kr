@@ -76,10 +76,15 @@ export function MainNavigation(): JSX.Element {
         <MenubarTrigger>소개</MenubarTrigger>
         <MenubarContent>
           <MenubarItem>
-            <Link href="/about" className="flex w-full">
+            <a
+              href="https://github.com/rukeni"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex w-full"
+            >
               About
-              <MenubarShortcut>⌘A</MenubarShortcut>
-            </Link>
+              {/* <MenubarShortcut>⌘A</MenubarShortcut> */}
+            </a>
           </MenubarItem>
           <MenubarItem>
             <Link href="/contact" className="flex w-full">
