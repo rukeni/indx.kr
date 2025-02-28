@@ -172,3 +172,69 @@ export async function getPostsByCategory(category: string): Promise<Post[]> {
 export async function getAllCategories(): Promise<string[]> {
   return getCategories();
 }
+
+// 마크다운 콘텐츠에서 헤더를 추출하는 함수
+export type TableOfContents = {
+  id: string;
+  text: string;
+  level: number;
+  children?: TableOfContents[];
+};
+
+export async function extractTableOfContents(
+  content: string,
+): Promise<TableOfContents[]> {
+  // 모든 헤더 선택 (# 형식)
+  const headerRegex = /^(#{1,6})\s+(.+)$/gm;
+  const toc: TableOfContents[] = [];
+  const matches = Array.from(content.matchAll(headerRegex));
+
+  // 헤더가 없을 경우 빈 배열 반환
+  if (!matches.length) return [];
+
+  // 헤더 정보 구성
+  for (const match of matches) {
+    const level = match[1].length; // # 개수
+    const text = match[2].trim();
+
+    // 헤더 ID 생성 (텍스트를 소문자로 변환하고 공백을 하이픈으로 변경)
+    const id = text
+      .toLowerCase()
+      .replace(/[^\w\s가-힣]/g, '') // 특수문자 제거 (한글 포함)
+      .replace(/\s+/g, '-'); // 공백을 하이픈으로 변경
+
+    // 헤더 객체 생성
+    const header: TableOfContents = { id, text, level, children: [] };
+
+    // 부모-자식 관계 구성 (h1 -> h2 -> h3 등)
+    if (level === 1) {
+      toc.push(header);
+    } else {
+      // 현재 헤더보다 레벨이 낮은(상위) 가장 가까운 헤더 찾기
+      let parent = toc[toc.length - 1];
+
+      // 부모 찾기
+      for (let i = toc.length - 1; i >= 0; i--) {
+        const potentialParent = toc[i];
+
+        if (potentialParent.level < level) {
+          parent = potentialParent;
+          break;
+        }
+      }
+
+      // 계층 구조 구성
+      if (parent && parent.level < level) {
+        if (!parent.children) {
+          parent.children = [];
+        }
+        parent.children.push(header);
+      } else {
+        // 적절한 부모가 없으면 최상위 레벨에 추가
+        toc.push(header);
+      }
+    }
+  }
+
+  return toc;
+}
