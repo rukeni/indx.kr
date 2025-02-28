@@ -129,4 +129,94 @@ export const MDXComponents = {
       </Link>
     );
   },
+  h1: ({ children }: { children: React.ReactNode }): JSX.Element => {
+    const id =
+      typeof children === 'string'
+        ? children
+            .toLowerCase()
+            .replace(/[^\w\s가-힣]/g, '')
+            .replace(/\s+/g, '-')
+        : '';
+
+    return (
+      <h1 id={id} className="scroll-mt-20">
+        {children}
+      </h1>
+    );
+  },
+  h2: ({ children }: { children: React.ReactNode }): JSX.Element => {
+    const id =
+      typeof children === 'string'
+        ? children
+            .toLowerCase()
+            .replace(/[^\w\s가-힣]/g, '')
+            .replace(/\s+/g, '-')
+        : '';
+
+    return (
+      <h2 id={id} className="scroll-mt-20">
+        {children}
+      </h2>
+    );
+  },
+  h3: ({ children }: { children: React.ReactNode }): JSX.Element => {
+    const id =
+      typeof children === 'string'
+        ? children
+            .toLowerCase()
+            .replace(/[^\w\s가-힣]/g, '')
+            .replace(/\s+/g, '-')
+        : '';
+
+    return (
+      <h3 id={id} className="scroll-mt-20">
+        {children}
+      </h3>
+    );
+  },
+  h4: ({ children }: { children: React.ReactNode }): JSX.Element => {
+    const id =
+      typeof children === 'string'
+        ? children
+            .toLowerCase()
+            .replace(/[^\w\s가-힣]/g, '')
+            .replace(/\s+/g, '-')
+        : '';
+
+    return (
+      <h4 id={id} className="scroll-mt-20">
+        {children}
+      </h4>
+    );
+  },
+  h5: ({ children }: { children: React.ReactNode }): JSX.Element => {
+    const id =
+      typeof children === 'string'
+        ? children
+            .toLowerCase()
+            .replace(/[^\w\s가-힣]/g, '')
+            .replace(/\s+/g, '-')
+        : '';
+
+    return (
+      <h5 id={id} className="scroll-mt-20">
+        {children}
+      </h5>
+    );
+  },
+  h6: ({ children }: { children: React.ReactNode }): JSX.Element => {
+    const id =
+      typeof children === 'string'
+        ? children
+            .toLowerCase()
+            .replace(/[^\w\s가-힣]/g, '')
+            .replace(/\s+/g, '-')
+        : '';
+
+    return (
+      <h6 id={id} className="scroll-mt-20">
+        {children}
+      </h6>
+    );
+  },
 };
