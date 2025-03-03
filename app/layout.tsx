@@ -7,6 +7,7 @@ import { Inter } from 'next/font/google';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { ThemeProvider } from '@/components/theme-provider';
+import OfflineDetector from '@/components/offline-detector';
 import { MainNavigation } from '@internal/components/navigation/main-navigation';
 
 import '@/styles/globals.css';
@@ -73,6 +74,7 @@ export default function RootLayout({
               </div>
             </footer>
           </div>
+          <OfflineDetector />
         </ThemeProvider>
       </body>
     </html>

@@ -4,7 +4,6 @@ import { z } from 'zod';
 
 import { getAllPosts } from '@internal/lib/blog';
 import { columns } from '@/components/table-view/columns';
-import OfflineDetector from '@/components/offline-detector';
 import { tableSchema } from '@/components/table-view/schema';
 import { DataTable } from '@/components/table-view/data-table';
 
@@ -37,7 +36,6 @@ export default async function Home(): Promise<JSX.Element> {
         기술, 일상, 그리고 다양한 생각들을 기록합니다.
       </p>
       <DataTable columns={columns} data={posts} />
-      <OfflineDetector />
     </main>
   );
 }
