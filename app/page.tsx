@@ -32,8 +32,11 @@ export default async function Home(): Promise<JSX.Element> {
   return (
     <main className="container mx-auto p-4 md:p-6">
       <h1 className="text-3xl font-bold mb-1">인덱스 블로그</h1>
-      <p className="text-muted-foreground mb-6">
-        기술, 일상, 그리고 다양한 생각들을 기록합니다.
+      <p className="text-muted-foreground mb-2">
+        다양한 생각들을 최대한 단순화하여 이해하기 쉽게 기록합니다.
+      </p>
+      <p className="text-sm text-muted-foreground mb-6 italic">
+        단순함이 궁극의 정교함이다
       </p>
       <DataTable columns={columns} data={posts} />
     </main>
