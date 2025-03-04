@@ -17,10 +17,16 @@ interface TableOfContentsProps {
 export function TableOfContents({ toc, className }: TableOfContentsProps) {
   const pathname = usePathname();
   const [activeId, setActiveId] = useState<string>('');
+  const [mounted, setMounted] = useState<boolean>(false);
+
+  // 클라이언트 사이드에서만 실행되도록 마운트 상태 관리
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // 스크롤 위치에 따라 활성화된 헤더를 업데이트
   useEffect(() => {
-    if (!toc.length) return;
+    if (!toc.length || !mounted) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -66,13 +72,14 @@ export function TableOfContents({ toc, className }: TableOfContentsProps) {
       clearTimeout(timer);
       observer.disconnect();
     };
-  }, [toc]);
+  }, [toc, mounted]);
 
   // 목차가 비어있으면 렌더링하지 않음
   if (!toc.length) {
     return null;
   }
 
+  // 목차 아이템 렌더링 함수
   const renderTOCItems = (items: TOCType[]) => {
     return items.map((item) => (
       <li key={item.id} className="mt-2">
@@ -119,7 +126,11 @@ export function TableOfContents({ toc, className }: TableOfContentsProps) {
           <h3 className="text-sm font-medium text-slate-800">목차</h3>
         </div>
         <div className="p-4 max-h-[70vh] overflow-y-auto">
-          <ul className="space-y-2">{renderTOCItems(toc)}</ul>
+          {mounted ? (
+            <ul className="space-y-2">{renderTOCItems(toc)}</ul>
+          ) : (
+            <div className="text-sm text-gray-500">목차 로딩 중...</div>
+          )}
         </div>
       </div>
     </div>

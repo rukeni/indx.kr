@@ -2,7 +2,20 @@
 
 import matter from 'gray-matter';
 
-import { getCategories, getCategoryFiles, readPostFile } from './fs';
+import {
+  getCategories,
+  getCategoryFiles,
+  readPostFile,
+  getSlugMappings,
+} from './fs';
+
+// 포스트 캐싱을 위한 메모리 캐시
+const postCache = new Map<string, { post: Post; timestamp: number }>();
+const TOC_CACHE = new Map<
+  string,
+  { toc: TableOfContents[]; timestamp: number }
+>();
+const CACHE_TTL = 3600000; // 1시간
 
 export type Post = {
   slug: string;
@@ -18,6 +31,7 @@ export type Post = {
   tags?: string[];
   readingTime?: number; // 분 단위
   series?: string;
+  tableOfContents?: TableOfContents[]; // 목차 정보 추가
 };
 
 export async function getAllPosts(): Promise<Post[]> {
@@ -68,66 +82,69 @@ export async function getPostBySlug(
   category: string,
   slug: string,
 ): Promise<Post | null> {
+  // 캐시 키 생성
+  const cacheKey = `post-${category}-${slug}`;
+
+  // 캐시 확인
+  const cachedPost = postCache.get(cacheKey);
+
+  if (cachedPost && Date.now() - cachedPost.timestamp < CACHE_TTL) {
+    return cachedPost.post;
+  }
+
   try {
     // 먼저 일반 slug로 검색
     const files = await getCategoryFiles(category);
-    const file = files.find((f) => f.replace(/\.mdx?$/, '') === slug);
+    let file = files.find((f) => f.replace(/\.mdx?$/, '') === slug);
+    let originalSlug = slug;
 
-    if (file) {
-      const source = await readPostFile(category, file);
+    // 일반 slug로 찾지 못한 경우 한글 slug 매핑 사용
+    if (!file) {
+      const slugMappings = await getSlugMappings(category);
 
-      if (!source) return null;
+      originalSlug = slugMappings[slug];
 
-      const { data, content } = matter(source);
-
-      // 읽기 시간 자동 계산 (평균 읽기 속도: 분당 200단어)
-      const wordCount = content.trim().split(/\s+/).length;
-      const readingTime = Math.ceil(wordCount / 200);
-
-      return {
-        ...data,
-        slug,
-        category,
-        content,
-        // 새로운 필드들
-        tags: data.tags || [],
-        readingTime: data.readingTime || readingTime,
-        series: data.series || null,
-      } as Post;
-    }
-
-    // 한글 slug로 검색
-    for (const file of files) {
-      const source = await readPostFile(category, file);
-
-      if (!source) continue;
-
-      const { data } = matter(source);
-
-      if (data.koreanSlug === slug) {
-        const { content } = matter(source);
-        const originalSlug = file.replace(/\.mdx?$/, '');
-
-        // 읽기 시간 자동 계산 (평균 읽기 속도: 분당 200단어)
-        const wordCount = content.trim().split(/\s+/).length;
-        const readingTime = Math.ceil(wordCount / 200);
-
-        return {
-          ...data,
-          slug: originalSlug,
-          koreanSlug: data.koreanSlug,
-          category,
-          content,
-          // 새로운 필드들
-          tags: data.tags || [],
-          readingTime: data.readingTime || readingTime,
-          series: data.series || null,
-        } as Post;
+      if (originalSlug) {
+        file = files.find((f) => f.replace(/\.mdx?$/, '') === originalSlug);
       }
     }
 
-    return null;
-  } catch {
+    if (!file) return null;
+
+    // 파일 내용 읽기 (캐싱된 결과 사용)
+    const source = await readPostFile(category, file);
+
+    if (!source) return null;
+
+    const { data, content } = matter(source);
+
+    // 읽기 시간 자동 계산 (평균 읽기 속도: 분당 200단어)
+    const wordCount = content.trim().split(/\s+/).length;
+    const readingTime = Math.ceil(wordCount / 200);
+
+    // 포스트 객체 생성
+    const post: Post = {
+      ...data,
+      slug: originalSlug,
+      koreanSlug: data.koreanSlug,
+      category,
+      content,
+      title: data.title,
+      date: data.date,
+      description: data.description,
+      // 새로운 필드들
+      tags: data.tags || [],
+      readingTime: data.readingTime || readingTime,
+      series: data.series || null,
+    };
+
+    // 결과 캐싱
+    postCache.set(cacheKey, { post, timestamp: Date.now() });
+
+    return post;
+  } catch (error) {
+    console.error('Error in getPostBySlug:', error);
+
     return null;
   }
 }
@@ -183,7 +200,18 @@ export type TableOfContents = {
 
 export async function extractTableOfContents(
   content: string,
+  postId?: string,
 ): Promise<TableOfContents[]> {
+  // 캐싱 키 (postId가 있으면 사용)
+  const cacheKey = postId ? `toc-${postId}` : `toc-${content.substring(0, 50)}`;
+
+  // 캐시 확인
+  const cachedTOC = TOC_CACHE.get(cacheKey);
+
+  if (cachedTOC && Date.now() - cachedTOC.timestamp < CACHE_TTL) {
+    return cachedTOC.toc;
+  }
+
   // 모든 헤더 선택 (# 형식)
   const headerRegex = /^(#{1,6})\s+(.+)$/gm;
   const toc: TableOfContents[] = [];
@@ -235,6 +263,9 @@ export async function extractTableOfContents(
       }
     }
   }
+
+  // 결과 캐싱
+  TOC_CACHE.set(cacheKey, { toc, timestamp: Date.now() });
 
   return toc;
 }
