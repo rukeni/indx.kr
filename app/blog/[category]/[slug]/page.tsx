@@ -1,12 +1,25 @@
 import type { JSX } from 'react';
 
 import { Suspense } from 'react';
+import dynamic from 'next/dynamic';
 import { notFound } from 'next/navigation';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 
 import { MDXComponents } from '@internal/components/mdx-components';
 import { getPostBySlug, extractTableOfContents } from '@internal/lib/blog';
-import { TableOfContents } from '@internal/components/toc/table-of-contents';
+
+// 클라이언트 컴포넌트를 동적으로 임포트
+const DynamicTableOfContents = dynamic(
+  () =>
+    import('@internal/components/toc/table-of-contents').then(
+      (mod) => mod.TableOfContents,
+    ),
+  {
+    loading: () => (
+      <div className="w-[280px] h-[300px] bg-gray-100 rounded-lg animate-pulse"></div>
+    ),
+  },
+);
 
 interface PostPageProps {
   params: Promise<{
@@ -19,7 +32,7 @@ interface PostPageProps {
 export const revalidate = 3600; // 1시간마다 재검증
 
 // 로딩 컴포넌트
-function LoadingContent() {
+function LoadingContent(): JSX.Element {
   return (
     <div className="animate-pulse">
       <div className="h-8 bg-gray-200 rounded w-3/4 mb-4"></div>
@@ -54,13 +67,7 @@ export default async function PostPage({
       <div className="flex flex-col lg:flex-row gap-8">
         {/* 목차 - 넓은 화면에서만 표시 */}
         <div className="hidden lg:block lg:sticky lg:top-28 lg:self-start">
-          <Suspense
-            fallback={
-              <div className="w-[280px] h-[300px] bg-gray-100 rounded-lg animate-pulse"></div>
-            }
-          >
-            <TableOfContents toc={tableOfContents} />
-          </Suspense>
+          <DynamicTableOfContents toc={tableOfContents} />
         </div>
 
         {/* 본문 내용 */}

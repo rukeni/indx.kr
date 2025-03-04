@@ -93,50 +93,15 @@ export async function getPostBySlug(
   }
 
   try {
-    // 먼저 일반 slug로 검색
-    const files = await getCategoryFiles(category);
-    let file = files.find((f) => f.replace(/\.mdx?$/, '') === slug);
-    let originalSlug = slug;
-
-    // 일반 slug로 찾지 못한 경우 한글 slug 매핑 사용
-    if (!file) {
-      const slugMappings = await getSlugMappings(category);
-
-      originalSlug = slugMappings[slug];
-
-      if (originalSlug) {
-        file = files.find((f) => f.replace(/\.mdx?$/, '') === originalSlug);
-      }
-    }
+    // 파일 찾기 함수 분리
+    const { file, originalSlug } = await findPostFile(category, slug);
 
     if (!file) return null;
 
-    // 파일 내용 읽기 (캐싱된 결과 사용)
-    const source = await readPostFile(category, file);
+    // 포스트 데이터 로드 함수 분리
+    const post = await loadPostData(category, file, originalSlug);
 
-    if (!source) return null;
-
-    const { data, content } = matter(source);
-
-    // 읽기 시간 자동 계산 (평균 읽기 속도: 분당 200단어)
-    const wordCount = content.trim().split(/\s+/).length;
-    const readingTime = Math.ceil(wordCount / 200);
-
-    // 포스트 객체 생성
-    const post: Post = {
-      ...data,
-      slug: originalSlug,
-      koreanSlug: data.koreanSlug,
-      category,
-      content,
-      title: data.title,
-      date: data.date,
-      description: data.description,
-      // 새로운 필드들
-      tags: data.tags || [],
-      readingTime: data.readingTime || readingTime,
-      series: data.series || null,
-    };
+    if (!post) return null;
 
     // 결과 캐싱
     postCache.set(cacheKey, { post, timestamp: Date.now() });
@@ -147,6 +112,66 @@ export async function getPostBySlug(
 
     return null;
   }
+}
+
+// 파일 찾기 함수 분리
+async function findPostFile(
+  category: string,
+  slug: string,
+): Promise<{ file: string | undefined; originalSlug: string }> {
+  // 먼저 일반 slug로 검색
+  const files = await getCategoryFiles(category);
+  let file = files.find((f) => f.replace(/\.mdx?$/, '') === slug);
+  let originalSlug = slug;
+
+  // 일반 slug로 찾지 못한 경우 한글 slug 매핑 사용
+  if (!file) {
+    const slugMappings = await getSlugMappings(category);
+
+    originalSlug = slugMappings[slug];
+
+    if (originalSlug) {
+      file = files.find((f) => f.replace(/\.mdx?$/, '') === originalSlug);
+    }
+  }
+
+  return { file, originalSlug };
+}
+
+// 포스트 데이터 로드 함수 분리
+async function loadPostData(
+  category: string,
+  file: string,
+  originalSlug: string,
+): Promise<Post | null> {
+  // 파일 내용 읽기 (캐싱된 결과 사용)
+  const source = await readPostFile(category, file);
+
+  if (!source) return null;
+
+  const { data, content } = matter(source);
+
+  // 읽기 시간 자동 계산 (평균 읽기 속도: 분당 200단어)
+  const wordCount = content.trim().split(/\s+/).length;
+  const readingTime = Math.ceil(wordCount / 200);
+
+  // 포스트 객체 생성
+  const post: Post = {
+    ...data,
+    slug: originalSlug,
+    koreanSlug: data.koreanSlug,
+    category,
+    content,
+    title: data.title,
+    date: data.date,
+    description: data.description,
+    // 새로운 필드들
+    tags: data.tags || [],
+    readingTime: data.readingTime || readingTime,
+    series: data.series || null,
+  };
+
+  return post;
 }
 
 export async function getPostsByCategory(category: string): Promise<Post[]> {
@@ -212,6 +237,17 @@ export async function extractTableOfContents(
     return cachedTOC.toc;
   }
 
+  // 헤더 추출 및 구성 함수 분리
+  const toc = extractHeaders(content);
+
+  // 결과 캐싱
+  TOC_CACHE.set(cacheKey, { toc, timestamp: Date.now() });
+
+  return toc;
+}
+
+// 헤더 추출 함수 분리
+function extractHeaders(content: string): TableOfContents[] {
   // 모든 헤더 선택 (# 형식)
   const headerRegex = /^(#{1,6})\s+(.+)$/gm;
   const toc: TableOfContents[] = [];
@@ -225,47 +261,75 @@ export async function extractTableOfContents(
     const level = match[1].length; // # 개수
     const text = match[2].trim();
 
-    // 헤더 ID 생성 (텍스트를 소문자로 변환하고 공백을 하이픈으로 변경)
-    const id = text
-      .toLowerCase()
-      .replace(/[^\w\s가-힣]/g, '') // 특수문자 제거 (한글 포함)
-      .replace(/\s+/g, '-'); // 공백을 하이픈으로 변경
+    // 헤더 ID 생성
+    const id = createHeaderId(text);
 
     // 헤더 객체 생성
     const header: TableOfContents = { id, text, level, children: [] };
 
-    // 부모-자식 관계 구성 (h1 -> h2 -> h3 등)
-    if (level === 1) {
-      toc.push(header);
-    } else {
-      // 현재 헤더보다 레벨이 낮은(상위) 가장 가까운 헤더 찾기
-      let parent = toc[toc.length - 1];
+    // 헤더 계층 구조에 추가
+    addHeaderToToc(toc, header);
+  }
 
-      // 부모 찾기
-      for (let i = toc.length - 1; i >= 0; i--) {
-        const potentialParent = toc[i];
+  return toc;
+}
 
-        if (potentialParent.level < level) {
-          parent = potentialParent;
-          break;
-        }
-      }
+// 헤더 ID 생성 함수
+function createHeaderId(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s가-힣]/g, '') // 특수문자 제거 (한글 포함)
+    .replace(/\s+/g, '-'); // 공백을 하이픈으로 변경
+}
 
-      // 계층 구조 구성
-      if (parent && parent.level < level) {
-        if (!parent.children) {
-          parent.children = [];
-        }
-        parent.children.push(header);
-      } else {
-        // 적절한 부모가 없으면 최상위 레벨에 추가
-        toc.push(header);
-      }
+// 헤더를 목차에 추가하는 함수
+function addHeaderToToc(toc: TableOfContents[], header: TableOfContents): void {
+  // h1 헤더는 최상위 레벨에 추가
+  if (header.level === 1) {
+    toc.push(header);
+
+    return;
+  }
+
+  // 현재 헤더보다 레벨이 낮은(상위) 가장 가까운 헤더 찾기
+  const parent = findParentHeader(toc, header.level);
+
+  // 적절한 부모가 있으면 자식으로 추가
+  if (parent) {
+    if (!parent.children) {
+      parent.children = [];
+    }
+    parent.children.push(header);
+  } else {
+    // 적절한 부모가 없으면 최상위 레벨에 추가
+    toc.push(header);
+  }
+}
+
+// 부모 헤더 찾기 함수
+function findParentHeader(
+  toc: TableOfContents[],
+  level: number,
+): TableOfContents | null {
+  // 배열이 비어있으면 부모가 없음
+  if (toc.length === 0) return null;
+
+  // 마지막 항목부터 역순으로 검색
+  for (let i = toc.length - 1; i >= 0; i--) {
+    const potentialParent = toc[i];
+
+    // 레벨이 낮은(상위) 헤더를 찾으면 반환
+    if (potentialParent.level < level) {
+      return potentialParent;
+    }
+
+    // 자식 항목들도 검사
+    if (potentialParent.children && potentialParent.children.length > 0) {
+      const childParent = findParentHeader(potentialParent.children, level);
+
+      if (childParent) return childParent;
     }
   }
 
-  // 결과 캐싱
-  TOC_CACHE.set(cacheKey, { toc, timestamp: Date.now() });
-
-  return toc;
+  return null;
 }
