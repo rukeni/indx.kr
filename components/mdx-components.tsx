@@ -3,7 +3,7 @@ import type { ImageProps } from 'next/image';
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Highlight } from 'prism-react-renderer';
+import dynamic from 'next/dynamic';
 
 const nebulaTheme = {
   plain: {
@@ -54,6 +54,17 @@ const Pre = ({ children }: { children: React.ReactNode }): JSX.Element => (
   <pre className="overflow-auto p-4 rounded-lg bg-[#1b1e2b]">{children}</pre>
 );
 
+// 코드 하이라이팅 컴포넌트를 동적으로 임포트
+const DynamicHighlight = dynamic(
+  () => import('prism-react-renderer').then((mod) => mod.Highlight),
+  {
+    loading: () => (
+      <div className="bg-[#1b1e2b] p-4 rounded-lg animate-pulse h-24"></div>
+    ),
+    ssr: true,
+  },
+);
+
 interface CodeProps {
   children: string;
   className?: string;
@@ -71,7 +82,7 @@ const Code = ({ children, className }: CodeProps): JSX.Element => {
   }
 
   return (
-    <Highlight code={children} language={language} theme={nebulaTheme}>
+    <DynamicHighlight code={children} language={language} theme={nebulaTheme}>
       {({ className, style, tokens, getLineProps, getTokenProps }) => (
         <Pre>
           <code
@@ -88,7 +99,7 @@ const Code = ({ children, className }: CodeProps): JSX.Element => {
           </code>
         </Pre>
       )}
-    </Highlight>
+    </DynamicHighlight>
   );
 };
 

@@ -21,7 +21,10 @@
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:chrome": "playwright test --project=chromium",
     "test:e2e:firefox": "playwright test --project=firefox",
-    "test:e2e:safari": "playwright test --project=webkit"
+    "test:e2e:safari": "playwright test --project=webkit",
+    "analyze": "ANALYZE=true pnpm build",
+    "analyze:client": "ANALYZE=true BUNDLE_ANALYZE=client pnpm build",
+    "analyze:server": "ANALYZE=true BUNDLE_ANALYZE=server pnpm build"
   },
   "type": "module",
   "dependencies": {
@@ -87,6 +90,7 @@
     "@eslint/eslintrc": "^3",
     "@eslint/js": "^9.21.0",
     "@microsoft/eslint-plugin-sdl": "^1.1.0",
+    "@next/bundle-analyzer": "^15.2.1",
     "@playwright/test": "^1.50.1",
     "@tailwindcss/postcss": "^4.0.8",
     "@testing-library/jest-dom": "^6.6.3",

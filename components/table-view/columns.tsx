@@ -190,6 +190,41 @@ export const columns: ColumnDef<TableData>[] = [
     ),
   },
   {
+    accessorKey: 'readingTime',
+    header: ({ column }) => (
+      <DataTableColumnHeader
+        title="읽기 시간"
+        onClick={() => column.toggleSorting()}
+        isSorted={column.getIsSorted() !== false}
+        sortDirection={column.getIsSorted() || null}
+      />
+    ),
+    cell: ({ row }): ReactNode => {
+      const readingTime = row.getValue('readingTime');
+
+      return (
+        <div className="flex items-center">
+          <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
+          <span>{readingTime ? `${readingTime}분` : '5분'}</span>
+        </div>
+      );
+    },
+    filterFn: (row, id, value): boolean => {
+      const readingTime = row.getValue(id) as number | undefined;
+
+      if (!readingTime) return false;
+
+      // 읽기 시간 필터링 로직
+      return value.some((filter: string) => {
+        if (filter === 'short') return readingTime <= 5;
+        if (filter === 'medium') return readingTime > 5 && readingTime <= 10;
+        if (filter === 'long') return readingTime > 10;
+
+        return false;
+      });
+    },
+  },
+  {
     id: 'actions',
     cell: ({ row }): ReactNode => (
       <div onClick={(e) => e.stopPropagation()}>
