@@ -11,6 +11,9 @@ export const tableSchema = z.object({
   tags: z.array(z.string()).optional(),
   readingTime: z.number().optional(),
   series: z.string().optional().nullable(),
+  seriesTitle: z.string().optional(),
+  seriesDescription: z.string().optional(),
+  seriesOrder: z.number().optional(),
 });
 
 export type TableData = z.infer<typeof tableSchema>;
