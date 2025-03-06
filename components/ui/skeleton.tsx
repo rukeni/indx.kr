@@ -1,12 +1,14 @@
-import { type ComponentProps, type JSX } from 'react';
+import type { JSX } from 'react';
 
 import { cn } from '@internal/lib/utils';
 
-function Skeleton({ className, ...props }: ComponentProps<'div'>): JSX.Element {
+function Skeleton({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>): JSX.Element {
   return (
     <div
-      data-slot="skeleton"
-      className={cn('bg-primary/10 animate-pulse rounded-md', className)}
+      className={cn('animate-pulse rounded-md bg-muted', className)}
       {...props}
     />
   );

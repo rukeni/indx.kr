@@ -1,11 +1,13 @@
 import type { JSX } from 'react';
 
 import { z } from 'zod';
+import { Suspense } from 'react';
 
 import { getAllPosts } from '@internal/lib/blog';
 import { columns } from '@/components/table-view/columns';
 import { tableSchema } from '@/components/table-view/schema';
 import { DataTable } from '@/components/table-view/data-table';
+import { TableSkeleton } from '@/components/table-view/table-skeleton';
 
 async function getPostsAsTableData(): Promise<z.infer<typeof tableSchema>[]> {
   const posts = await getAllPosts();
@@ -41,7 +43,9 @@ export default async function Home(): Promise<JSX.Element> {
       <p className="text-sm text-muted-foreground mb-6 italic">
         단순함이 궁극의 정교함이다
       </p>
-      <DataTable columns={columns} data={posts} />
+      <Suspense fallback={<TableSkeleton />}>
+        <DataTable columns={columns} data={posts} />
+      </Suspense>
     </main>
   );
 }

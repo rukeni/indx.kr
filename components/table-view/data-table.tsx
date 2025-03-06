@@ -12,6 +12,7 @@ import type {
 import type { TableData } from './schema';
 
 import * as React from 'react';
+import { Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   flexRender,
@@ -33,6 +34,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
+import { TableSkeleton } from './table-skeleton';
 import { DataTableToolbar } from './data-table-toolbar';
 import { DataTablePagination } from './data-table-pagination';
 
@@ -90,7 +92,9 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-4">
-      <DataTableToolbar table={table} />
+      <Suspense fallback={<TableSkeleton />}>
+        <DataTableToolbar table={table} />
+      </Suspense>
       <div className="rounded-md border">
         <Table>
           <TableHeader>
