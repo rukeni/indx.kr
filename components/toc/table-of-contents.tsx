@@ -1,5 +1,7 @@
 'use client';
 
+import type { JSX } from 'react';
+
 import type { TableOfContents as TOCType } from '@internal/lib/blog';
 
 import Link from 'next/link';
@@ -12,9 +14,14 @@ import { cn } from '@internal/lib/utils';
 interface TableOfContentsProps {
   toc: TOCType[];
   className?: string;
+  title?: string;
 }
 
-export function TableOfContents({ toc, className }: TableOfContentsProps) {
+export function TableOfContents({
+  toc,
+  className,
+  title = '목차',
+}: TableOfContentsProps): JSX.Element | null {
   const pathname = usePathname();
   const [activeId, setActiveId] = useState<string>('');
   const [mounted, setMounted] = useState<boolean>(false);
@@ -40,7 +47,7 @@ export function TableOfContents({ toc, className }: TableOfContentsProps) {
     );
 
     // 모든 헤더 요소 관찰
-    const observeHeaders = () => {
+    const observeHeaders = (): void => {
       // 재귀적으로 헤더 ID 수집
       const collectHeaderIds = (items: TOCType[]): string[] => {
         return items.flatMap((item) => {
@@ -68,7 +75,7 @@ export function TableOfContents({ toc, className }: TableOfContentsProps) {
     // 약간의 지연 후 관찰 시작 (렌더링 완료를 보장)
     const timer = setTimeout(observeHeaders, 100);
 
-    return () => {
+    return (): void => {
       clearTimeout(timer);
       observer.disconnect();
     };
@@ -80,7 +87,7 @@ export function TableOfContents({ toc, className }: TableOfContentsProps) {
   }
 
   // 목차 아이템 렌더링 함수
-  const renderTOCItems = (items: TOCType[]) => {
+  const renderTOCItems = (items: TOCType[]): JSX.Element[] => {
     return items.map((item) => (
       <li key={item.id} className="mt-2">
         <Link
@@ -123,13 +130,13 @@ export function TableOfContents({ toc, className }: TableOfContentsProps) {
       <div className="bg-white rounded-lg overflow-hidden">
         <div className="flex items-center gap-2 py-3 px-4 border-b bg-slate-50">
           <ListOrderedIcon className="h-5 w-5 text-slate-600" />
-          <h3 className="text-sm font-medium text-slate-800">목차</h3>
+          <h3 className="text-sm font-medium text-slate-800">{title}</h3>
         </div>
         <div className="p-4 max-h-[70vh] overflow-y-auto">
           {mounted ? (
             <ul className="space-y-2">{renderTOCItems(toc)}</ul>
           ) : (
-            <div className="text-sm text-gray-500">목차 로딩 중...</div>
+            <div className="text-sm text-gray-500">{title} 로딩 중...</div>
           )}
         </div>
       </div>

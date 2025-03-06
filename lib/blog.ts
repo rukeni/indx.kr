@@ -17,6 +17,17 @@ const TOC_CACHE = new Map<
 >();
 const CACHE_TTL = 3600000; // 1시간
 
+export type SeriesMetadata = {
+  title: string;
+  description?: string;
+  order: number;
+};
+
+export type PostMetadata = {
+  series?: SeriesMetadata;
+  [key: string]: unknown;
+};
+
 export type Post = {
   slug: string;
   koreanSlug?: string;
@@ -27,11 +38,14 @@ export type Post = {
   content: string;
   status?: 'backlog' | 'todo' | 'in progress' | 'done' | 'canceled';
   priority?: 'low' | 'medium' | 'high';
-  metadata?: Record<string, unknown>;
   tags?: string[];
-  readingTime?: number; // 분 단위
+  readingTime?: number;
+  // 시리즈 관련 필드 평탄화
   series?: string;
-  tableOfContents?: TableOfContents[]; // 목차 정보 추가
+  seriesTitle?: string;
+  seriesDescription?: string;
+  seriesOrder?: number;
+  tableOfContents?: TableOfContents[];
 };
 
 export async function getAllPosts(): Promise<Post[]> {
@@ -54,26 +68,36 @@ export async function getAllPosts(): Promise<Post[]> {
         const wordCount = content.trim().split(/\s+/).length;
         const readingTime = Math.ceil(wordCount / 200);
 
-        posts.push({
-          ...data,
+        // 메타데이터 평탄화
+        const post: Post = {
           slug,
           koreanSlug: data.koreanSlug,
           category,
           content,
+          title: data.title,
+          date: data.date,
+          description: data.description,
           status: data.status || 'in progress',
           priority: data.priority || 'medium',
-          // 새로운 필드들
           tags: data.tags || [],
           readingTime: data.readingTime || readingTime,
           series: data.series || null,
-        } as Post);
+          seriesTitle: data.seriesTitle || null,
+          seriesDescription: data.seriesDescription || null,
+          seriesOrder: data.seriesOrder || null,
+          ...data,
+        };
+
+        posts.push(post);
       }
     }
 
     return posts.sort(
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
     );
-  } catch {
+  } catch (error) {
+    console.error('getAllPosts 에러:', error);
+
     return [];
   }
 }
@@ -144,7 +168,6 @@ async function loadPostData(
   file: string,
   originalSlug: string,
 ): Promise<Post | null> {
-  // 파일 내용 읽기 (캐싱된 결과 사용)
   const source = await readPostFile(category, file);
 
   if (!source) return null;
@@ -155,9 +178,8 @@ async function loadPostData(
   const wordCount = content.trim().split(/\s+/).length;
   const readingTime = Math.ceil(wordCount / 200);
 
-  // 포스트 객체 생성
+  // 메타데이터 평탄화
   const post: Post = {
-    ...data,
     slug: originalSlug,
     koreanSlug: data.koreanSlug,
     category,
@@ -165,10 +187,14 @@ async function loadPostData(
     title: data.title,
     date: data.date,
     description: data.description,
-    // 새로운 필드들
+    status: data.status || 'in progress',
+    priority: data.priority || 'medium',
     tags: data.tags || [],
     readingTime: data.readingTime || readingTime,
     series: data.series || null,
+    seriesTitle: data.seriesTitle || null,
+    seriesDescription: data.seriesDescription || null,
+    seriesOrder: data.seriesOrder || null,
   };
 
   return post;
@@ -192,14 +218,21 @@ export async function getPostsByCategory(category: string): Promise<Post[]> {
       const readingTime = Math.ceil(wordCount / 200);
 
       posts.push({
-        ...data,
         slug,
+        koreanSlug: data.koreanSlug,
         category,
         content,
-        // 새로운 필드들
+        title: data.title,
+        date: data.date,
+        description: data.description,
+        status: data.status || 'in progress',
+        priority: data.priority || 'medium',
         tags: data.tags || [],
         readingTime: data.readingTime || readingTime,
         series: data.series || null,
+        seriesTitle: data.seriesTitle || null,
+        seriesDescription: data.seriesDescription || null,
+        seriesOrder: data.seriesOrder || null,
       } as Post);
     }
 

@@ -77,7 +77,7 @@ export function DataTable<TData, TValue>({
   });
 
   // 블로그 포스트 페이지로 이동하는 함수
-  const navigateToPost = (row: Row<TData>) => {
+  const navigateToPost = (row: Row<TData>): void => {
     // 타입 단언을 사용하여 TableData로 변환
     const data = row.original as unknown as TableData;
 

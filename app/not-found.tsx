@@ -1,6 +1,8 @@
+import type { JSX } from 'react';
+
 import Link from 'next/link';
 
-export default function NotFound() {
+export default function NotFound(): JSX.Element {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 text-center">
