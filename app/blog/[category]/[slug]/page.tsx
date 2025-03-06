@@ -6,13 +6,33 @@ import { notFound } from 'next/navigation';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 
 import { MDXComponents } from '@internal/components/mdx-components';
-import { getPostBySlug, extractTableOfContents } from '@internal/lib/blog';
+import {
+  convertSeriesToTOC,
+  extractSeriesFromPosts,
+} from '@internal/lib/series';
+import {
+  getPostBySlug,
+  extractTableOfContents,
+  getAllPosts,
+} from '@internal/lib/blog';
 
 // 클라이언트 컴포넌트를 동적으로 임포트
 const DynamicTableOfContents = dynamic(
   () =>
     import('@internal/components/toc/table-of-contents').then(
       (mod) => mod.TableOfContents,
+    ),
+  {
+    loading: () => (
+      <div className="w-[280px] h-[300px] bg-gray-100 rounded-lg animate-pulse"></div>
+    ),
+  },
+);
+
+const DynamicSeriesOfContents = dynamic(
+  () =>
+    import('@internal/components/toc/series-of-contents').then(
+      (mod) => mod.SeriesOfContents,
     ),
   {
     loading: () => (
@@ -62,6 +82,18 @@ export default async function PostPage({
   const postId = `${category}-${post.slug}`;
   const tableOfContents = await extractTableOfContents(post.content, postId);
 
+  // 시리즈 정보 가져오기
+  let seriesTOC = null;
+
+  if (post.series) {
+    const allPosts = await getAllPosts();
+    const series = extractSeriesFromPosts(allPosts, post.series);
+
+    if (series) {
+      seriesTOC = convertSeriesToTOC(series, post.koreanSlug || post.slug);
+    }
+  }
+
   return (
     <div className="container mx-auto py-12 px-4">
       <div className="flex flex-col lg:flex-row gap-8">
@@ -92,6 +124,13 @@ export default async function PostPage({
             </Suspense>
           </div>
         </article>
+
+        {/* 시리즈 목차 - 시리즈가 있는 경우에만 표시 */}
+        {seriesTOC && (
+          <div className="hidden lg:block lg:sticky lg:top-28 lg:self-start">
+            <DynamicSeriesOfContents toc={seriesTOC} seriesId={post.series} />
+          </div>
+        )}
       </div>
     </div>
   );

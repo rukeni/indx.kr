@@ -22,6 +22,9 @@ async function getPostsAsTableData(): Promise<z.infer<typeof tableSchema>[]> {
       tags: post.tags || [],
       readingTime: post.readingTime || 5,
       series: post.series || undefined,
+      seriesTitle: post.seriesTitle || undefined,
+      seriesDescription: post.seriesDescription || undefined,
+      seriesOrder: post.seriesOrder || undefined,
     })),
   );
 }
