@@ -4,9 +4,9 @@ import type { JSX } from 'react';
 
 import type { Post } from '@internal/lib/blog';
 
-import { useMemo } from 'react';
 import { useState, type FC } from 'react';
 import { useRouter } from 'next/navigation';
+import { useMemo, useCallback } from 'react';
 import { ChevronDown, Search, Clock, BookOpen } from 'lucide-react';
 
 import { Input } from '@/components/ui/input';
@@ -57,13 +57,20 @@ const BlogTable: FC<BlogTableProps> = ({ posts }): JSX.Element => {
 
   // 모든 시리즈와 태그 목록 추출 (중복 제거)
   const allSeries = useMemo(() => {
-    const seriesSet = new Set<string>();
+    const seriesMap = new Map<string, string>();
 
     posts.forEach((post) => {
-      if (post.series) seriesSet.add(post.series);
+      if (post.series && post.seriesTitle) {
+        seriesMap.set(post.series, post.seriesTitle);
+      }
     });
 
-    return Array.from(seriesSet);
+    const result = Array.from(seriesMap.entries()).map(([id, title]) => ({
+      id,
+      title,
+    }));
+
+    return result;
   }, [posts]);
 
   const allTags = useMemo(() => {
@@ -78,8 +85,9 @@ const BlogTable: FC<BlogTableProps> = ({ posts }): JSX.Element => {
     return Array.from(tagsSet);
   }, [posts]);
 
-  const filteredAndSortedPosts = useMemo(() => {
-    let result = posts.filter((post) => {
+  // 포스트 필터링 함수
+  const filterPost = useCallback(
+    (post: Post): boolean => {
       // 검색어 필터링
       if (
         searchQuery &&
@@ -89,13 +97,28 @@ const BlogTable: FC<BlogTableProps> = ({ posts }): JSX.Element => {
         return false;
       }
 
-      if (categoryFilter && post.category !== categoryFilter) return false;
-      if (seriesFilter && post.series !== seriesFilter) return false;
-      if (tagFilter && (!post.tags || !post.tags.includes(tagFilter)))
+      // 카테고리 필터링
+      if (categoryFilter && post.category !== categoryFilter) {
         return false;
+      }
+
+      // 시리즈 필터링
+      if (seriesFilter && post.series !== seriesFilter) {
+        return false;
+      }
+
+      // 태그 필터링
+      if (tagFilter && (!post.tags || !post.tags.includes(tagFilter))) {
+        return false;
+      }
 
       return true;
-    });
+    },
+    [searchQuery, categoryFilter, seriesFilter, tagFilter],
+  );
+
+  const filteredAndSortedPosts = useMemo(() => {
+    let result = posts.filter(filterPost);
 
     if (sortConfig.key && sortConfig.direction) {
       result = [...result].sort((a, b) => {
@@ -113,7 +136,7 @@ const BlogTable: FC<BlogTableProps> = ({ posts }): JSX.Element => {
     }
 
     return result;
-  }, [posts, searchQuery, categoryFilter, seriesFilter, tagFilter, sortConfig]);
+  }, [posts, filterPost, sortConfig]);
 
   const getCategoryLabel = (category: string): string => {
     switch (category) {
@@ -185,10 +208,10 @@ const BlogTable: FC<BlogTableProps> = ({ posts }): JSX.Element => {
                 </DropdownMenuItem>
                 {allSeries.map((series) => (
                   <DropdownMenuItem
-                    key={series}
-                    onClick={() => setSeriesFilter(series)}
+                    key={series.id}
+                    onClick={() => setSeriesFilter(series.id)}
                   >
-                    {series}
+                    {series.title}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
@@ -301,10 +324,10 @@ const BlogTable: FC<BlogTableProps> = ({ posts }): JSX.Element => {
                   </TableCell>
                   <TableCell>{getCategoryLabel(post.category)}</TableCell>
                   <TableCell className="hidden md:table-cell">
-                    {post.series ? (
+                    {post.series && post.seriesTitle ? (
                       <div className="flex items-center">
                         <BookOpen className="h-4 w-4 mr-1.5" />
-                        <span>{post.series}</span>
+                        <span>{post.seriesTitle}</span>
                       </div>
                     ) : (
                       '-'
