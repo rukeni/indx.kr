@@ -1,4 +1,7 @@
+'use client';
+
 import type { JSX } from 'react';
+import type { LucideIcon } from 'lucide-react';
 import type { Column } from '@tanstack/react-table';
 
 import { Check, PlusCircle } from 'lucide-react';
@@ -28,14 +31,16 @@ interface DataTableFacetedFilterProps<TData, TValue> {
   options: {
     label: string;
     value: string;
-    icon?: React.ComponentType<{ className?: string }>;
+    icon: LucideIcon;
   }[];
+  onValueChange?: (value: string[]) => void;
 }
 
 export function DataTableFacetedFilter<TData, TValue>({
   column,
   title,
   options,
+  onValueChange,
 }: DataTableFacetedFilterProps<TData, TValue>): JSX.Element {
   const facets = column?.getFacetedUniqueValues();
   const selectedValues = new Set(column?.getFilterValue() as string[]);
@@ -104,6 +109,9 @@ export function DataTableFacetedFilter<TData, TValue>({
                       column?.setFilterValue(
                         filterValues.length ? filterValues : undefined,
                       );
+                      if (onValueChange) {
+                        onValueChange(filterValues);
+                      }
                     }}
                   >
                     <div
@@ -134,7 +142,12 @@ export function DataTableFacetedFilter<TData, TValue>({
                 <CommandSeparator />
                 <CommandGroup>
                   <CommandItem
-                    onSelect={() => column?.setFilterValue(undefined)}
+                    onSelect={() => {
+                      column?.setFilterValue(undefined);
+                      if (onValueChange) {
+                        onValueChange([]);
+                      }
+                    }}
                     className="justify-center text-center"
                   >
                     필터 초기화

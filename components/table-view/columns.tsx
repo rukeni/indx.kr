@@ -109,13 +109,14 @@ export const columns: ColumnDef<TableData>[] = [
     ),
     cell: ({ row }): ReactNode => {
       const series = row.getValue('series');
+      const seriesTitle = row.original.seriesTitle;
 
       return (
         <div className="flex items-center">
           {series ? (
             <>
               <BookOpen className="mr-2 h-4 w-4 text-muted-foreground" />
-              <span>{String(series)}</span>
+              <span>{seriesTitle || String(series)}</span>
             </>
           ) : (
             <span className="text-muted-foreground">-</span>
