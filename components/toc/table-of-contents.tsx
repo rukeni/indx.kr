@@ -112,7 +112,7 @@ export function TableOfContents({
           {item.text}
         </Link>
         {item.children?.length ? (
-          <ul className="mt-1 border-l border-l-slate-200 ml-2">
+          <ul className="mt-1 border-l border-l-primary ml-2">
             {renderTOCItems(item.children)}
           </ul>
         ) : null}
@@ -123,20 +123,22 @@ export function TableOfContents({
   return (
     <div
       className={cn(
-        'w-full max-w-[280px] bg-white border rounded-lg shadow-md',
+        'w-full max-w-[280px] bg-white border border-foreground shadow-md',
         className,
       )}
     >
-      <div className="bg-white rounded-lg overflow-hidden">
-        <div className="flex items-center gap-2 py-3 px-4 border-b bg-slate-50">
-          <ListOrderedIcon className="h-5 w-5 text-slate-600" />
-          <h3 className="text-sm font-medium text-slate-800">{title}</h3>
+      <div className="bg-white overflow-hidden">
+        <div className="flex items-center gap-2 py-3 px-4 border-b border-b-foreground bg-muted/50">
+          <ListOrderedIcon className="h-5 w-5 text-foreground" />
+          <h3 className="text-lg font-semibold text-foreground">{title}</h3>
         </div>
         <div className="p-4 max-h-[70vh] overflow-y-auto">
           {mounted ? (
             <ul className="space-y-2">{renderTOCItems(toc)}</ul>
           ) : (
-            <div className="text-sm text-gray-500">{title} 로딩 중...</div>
+            <div className="text-sm text-muted-foreground">
+              {title} 로딩 중...
+            </div>
           )}
         </div>
       </div>

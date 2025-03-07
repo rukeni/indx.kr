@@ -41,7 +41,15 @@ export function SeriesOfContents({
       const href = item.level === 1 ? `/?series=${seriesId}` : `#${item.id}`;
 
       return (
-        <li key={item.id} className={cn('mt-2', item.level === 1 && 'mt-4')}>
+        <li
+          key={item.id}
+          className={cn(
+            'mt-2  ',
+            item.level === 1 && 'mt-4',
+            item.level === 2 &&
+              'before:content-["•"] before:absolute before:left-1 before:text-muted-foreground/70',
+          )}
+        >
           <Link
             href={href}
             className={cn(
@@ -54,9 +62,7 @@ export function SeriesOfContents({
             {item.text}
           </Link>
           {item.children && item.children.length > 0 && (
-            <ul className="ml-4 border-l text-sm">
-              {renderTOCItems(item.children)}
-            </ul>
+            <ul className="ml-4 text-sm">{renderTOCItems(item.children)}</ul>
           )}
         </li>
       );

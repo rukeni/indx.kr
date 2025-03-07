@@ -244,7 +244,7 @@ const BlogTable: FC<BlogTableProps> = ({ posts }): JSX.Element => {
         </div>
       </div>
 
-      <div className="rounded-md border">
+      <div className="border border-foreground">
         <Table>
           <TableHeader>
             <TableRow>
