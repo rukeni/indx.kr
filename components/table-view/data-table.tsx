@@ -95,14 +95,18 @@ export function DataTable<TData, TValue>({
       <Suspense fallback={<TableSkeleton />}>
         <DataTableToolbar table={table} />
       </Suspense>
-      <div className="rounded-md border">
+      <div className="border border-foreground">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id} colSpan={header.colSpan}>
+                    <TableHead
+                      key={header.id}
+                      colSpan={header.colSpan}
+                      className="border-b border-b-foreground bg-muted/50"
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -121,7 +125,7 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
-                  className="cursor-pointer hover:bg-muted/50"
+                  className="cursor-pointer hover:bg-muted/50 border-b border-b-foreground"
                   onClick={() => navigateToPost(row)}
                 >
                   {row.getVisibleCells().map((cell) => (
