@@ -176,7 +176,7 @@ export function DataTableToolbar<TData>({
               scroll: false,
             });
           }}
-          className="h-8 w-[150px] lg:w-[250px]"
+          className="h-8 w-[150px] lg:w-[250px] border border-foreground"
         />
         {table.getColumn('category') && (
           <DataTableFacetedFilter

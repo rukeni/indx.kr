@@ -25,7 +25,7 @@ export const columns: ColumnDef<TableData>[] = [
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="모두 선택"
-        className="translate-y-[2px]"
+        className="translate-y-[2px] border border-foreground"
       />
     ),
     cell: ({ row }): ReactNode => (
@@ -33,7 +33,7 @@ export const columns: ColumnDef<TableData>[] = [
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
         aria-label="행 선택"
-        className="translate-y-[2px]"
+        className="translate-y-[2px] border border-foreground"
         onClick={(e) => e.stopPropagation()} // 상위 이벤트 전파 방지
       />
     ),

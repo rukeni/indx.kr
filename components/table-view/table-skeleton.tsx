@@ -22,7 +22,7 @@ export function TableSkeleton(): JSX.Element {
         </div>
         <Skeleton className="h-8 w-[100px]" />
       </div>
-      <div className="rounded-md border">
+      <div className="border border-foreground">
         <Table>
           <TableHeader>
             <TableRow>
