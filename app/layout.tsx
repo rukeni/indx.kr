@@ -34,7 +34,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <div className="grid min-h-screen grid-rows-[auto,1fr,auto]">
-            <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <header className="sticky top-0 z-50 w-full border-b border-b-foreground bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
               <div className="flex h-14 justify-between items-center">
                 <Link href="/">
                   <div className="flex items-center justify-center gap-2 mx-4">
@@ -58,7 +58,7 @@ export default function RootLayout({
               </div>
             </header>
             {children}
-            <footer className="border-t py-6 md:py-0 flex flex-col justify-center items-center">
+            <footer className="border-t border-t-foreground py-6 md:py-0 flex flex-col justify-center items-center">
               <div className="flex flex-col items-center justify-between gap-4 md:h-16 md:flex-row mx-4">
                 <p className="text-sm text-muted-foreground">
                   © 2025 indx.kr. All rights reserved.
