@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { useState } from 'react';
 
 import { UrlBookmark } from '@/components/ui/url-bookmark';
@@ -12,14 +13,16 @@ interface ReferencesSectionProps {
  * 문서 하단에 표시할 참고자료 섹션 컴포넌트
  * 추출된 URL들을 북마크 형태로 보여줍니다.
  */
-export function ReferencesSection({ urls }: ReferencesSectionProps) {
+export function ReferencesSection({
+  urls,
+}: ReferencesSectionProps): React.ReactElement | null {
   const [expandedUrls, setExpandedUrls] = useState<string[]>([]);
 
   // 참조할 URL이 없으면 아무것도 렌더링하지 않음
   if (!urls.length) return null;
 
   // 확장/축소 토글 핸들러
-  const toggleExpand = (url: string) => {
+  const toggleExpand = (url: string): void => {
     setExpandedUrls((prev) =>
       prev.includes(url) ? prev.filter((u) => u !== url) : [...prev, url],
     );

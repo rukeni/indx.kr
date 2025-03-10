@@ -95,9 +95,6 @@ export default async function PostPage({
     }
   }
 
-  // 참고자료 URL 디버깅
-  console.log('[SERVER] 참고자료 URL:', post.referenceUrls);
-
   return (
     <div className="container mx-auto py-12 px-4">
       <div className="flex flex-col lg:flex-row gap-8">

@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { LinkIcon, ExternalLinkIcon, GlobeIcon } from 'lucide-react';
@@ -9,7 +10,6 @@ import { cn } from '@/lib/utils';
 import { Skeleton } from './skeleton';
 import {
   Card,
-  CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
@@ -34,13 +34,13 @@ export function UrlBookmark({
   initialUrl = '',
   className,
   onUrlChange,
-}: UrlBookmarkProps) {
+}: UrlBookmarkProps): React.ReactElement {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [previewData, setPreviewData] = useState<UrlPreviewData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // URL이 변경될 때 미리보기 데이터를 가져오는 함수
-  const fetchPreviewData = async (urlToFetch: string) => {
+  const fetchPreviewData = async (urlToFetch: string): Promise<void> => {
     if (!urlToFetch) return;
 
     setIsLoading(true);
@@ -68,7 +68,6 @@ export function UrlBookmark({
         onUrlChange(urlToFetch);
       }
     } catch (err) {
-      console.error('URL 미리보기 오류:', err);
       setError(
         err instanceof Error
           ? err.message

@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { LinkIcon } from 'lucide-react';
 
 import { UrlBookmark } from './url-bookmark';
@@ -19,7 +20,9 @@ interface UrlBookmarkListProps {
  * URL 북마크 목록을 렌더링하는 클라이언트 컴포넌트
  * shadcn UI의 Card 컴포넌트를 활용하여 세련된 디자인 적용
  */
-export function UrlBookmarkList({ urls }: UrlBookmarkListProps) {
+export function UrlBookmarkList({
+  urls,
+}: UrlBookmarkListProps): React.ReactElement | null {
   if (!urls || urls.length === 0) {
     return null;
   }

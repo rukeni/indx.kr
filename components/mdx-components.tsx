@@ -235,7 +235,11 @@ export const MDXComponents = {
     );
   },
   // MDX 콘텐츠 래퍼 - 서버 컴포넌트로 유지
-  wrapper: ({ children }: { children: React.ReactNode }) => {
+  wrapper: ({
+    children,
+  }: {
+    children: React.ReactNode;
+  }): React.ReactElement => {
     return <>{children}</>;
   },
 };
