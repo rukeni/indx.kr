@@ -3,8 +3,9 @@ import type { ImageProps } from 'next/image';
 
 import Link from 'next/link';
 import Image from 'next/image';
-import dynamic from 'next/dynamic';
+import { Highlight } from 'prism-react-renderer';
 
+// 테마 정의
 const nebulaTheme = {
   plain: {
     color: '#a4b1cd',
@@ -50,29 +51,23 @@ const nebulaTheme = {
   ],
 };
 
+// 코드 블록 래퍼 컴포넌트
 const Pre = ({ children }: { children: React.ReactNode }): JSX.Element => (
   <pre className="overflow-auto p-4 rounded-lg bg-[#1b1e2b]">{children}</pre>
 );
 
-// 코드 하이라이팅 컴포넌트를 동적으로 임포트
-const DynamicHighlight = dynamic(
-  () => import('prism-react-renderer').then((mod) => mod.Highlight),
-  {
-    loading: () => (
-      <div className="bg-[#1b1e2b] p-4 rounded-lg animate-pulse h-24"></div>
-    ),
-    ssr: true,
-  },
-);
-
+// 코드 컴포넌트 인터페이스
 interface CodeProps {
   children: string;
   className?: string;
 }
 
+// 코드 컴포넌트 - 서버 컴포넌트로 유지
 const Code = ({ children, className }: CodeProps): JSX.Element => {
-  const language = className ? className.replace('language-', '') : '';
+  // 언어 추출
+  const rawLanguage = className ? className.replace(/language-/, '') : '';
 
+  // 인라인 코드
   if (!className) {
     return (
       <code className="bg-[#2a2e3f] text-[#a4b1cd] rounded px-1">
@@ -81,28 +76,36 @@ const Code = ({ children, className }: CodeProps): JSX.Element => {
     );
   }
 
+  // 코드 블록
   return (
-    <DynamicHighlight code={children} language={language} theme={nebulaTheme}>
-      {({ className, style, tokens, getLineProps, getTokenProps }) => (
-        <Pre>
-          <code
-            className={className}
-            style={{ ...style, backgroundColor: 'transparent' }}
-          >
-            {tokens.map((line, i) => (
-              <div key={i} {...getLineProps({ line })}>
-                {line.map((token, key) => (
-                  <span key={key} {...getTokenProps({ token })} />
-                ))}
-              </div>
-            ))}
-          </code>
-        </Pre>
-      )}
-    </DynamicHighlight>
+    <div>
+      <Highlight
+        code={children}
+        language={rawLanguage || 'text'}
+        theme={nebulaTheme}
+      >
+        {({ className, style, tokens, getLineProps, getTokenProps }) => (
+          <Pre>
+            <code
+              className={className}
+              style={{ ...style, backgroundColor: 'transparent' }}
+            >
+              {tokens.map((line, i) => (
+                <div key={i} {...getLineProps({ line })}>
+                  {line.map((token, key) => (
+                    <span key={key} {...getTokenProps({ token })} />
+                  ))}
+                </div>
+              ))}
+            </code>
+          </Pre>
+        )}
+      </Highlight>
+    </div>
   );
 };
 
+// MDX 컴포넌트 정의
 export const MDXComponents = {
   pre: Pre,
   code: Code,
@@ -128,6 +131,7 @@ export const MDXComponents = {
           target="_blank"
           rel="noopener noreferrer"
           className="text-primary hover:underline"
+          data-external-link="true"
         >
           {children}
         </a>
@@ -229,5 +233,9 @@ export const MDXComponents = {
         {children}
       </h6>
     );
+  },
+  // MDX 콘텐츠 래퍼 - 서버 컴포넌트로 유지
+  wrapper: ({ children }: { children: React.ReactNode }) => {
+    return <>{children}</>;
   },
 };

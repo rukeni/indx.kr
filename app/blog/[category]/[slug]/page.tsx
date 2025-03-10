@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 
 import { MDXComponents } from '@internal/components/mdx-components';
+import { UrlBookmarkList } from '@/components/ui/url-bookmark-list';
 import {
   convertSeriesToTOC,
   extractSeriesFromPosts,
@@ -94,6 +95,9 @@ export default async function PostPage({
     }
   }
 
+  // 참고자료 URL 디버깅
+  console.log('[SERVER] 참고자료 URL:', post.referenceUrls);
+
   return (
     <div className="container mx-auto py-12 px-4">
       <div className="flex flex-col lg:flex-row gap-8">
@@ -122,6 +126,13 @@ export default async function PostPage({
             <Suspense fallback={<LoadingContent />}>
               <MDXRemote components={MDXComponents} source={post.content} />
             </Suspense>
+
+            {/* 참고자료 섹션을 직접 렌더링 */}
+            {post.referenceUrls && post.referenceUrls.length > 0 && (
+              <div className="mt-16">
+                <UrlBookmarkList urls={post.referenceUrls} />
+              </div>
+            )}
           </div>
         </article>
 
