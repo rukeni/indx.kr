@@ -2,6 +2,7 @@
 
 import matter from 'gray-matter';
 
+import { extractUrlsFromMarkdown } from './extract-urls';
 import {
   getCategories,
   getCategoryFiles,
@@ -46,6 +47,8 @@ export type Post = {
   seriesDescription?: string;
   seriesOrder?: number;
   tableOfContents?: TableOfContents[];
+  // 참고자료 URL 목록
+  referenceUrls?: string[];
 };
 
 export async function getAllPosts(): Promise<Post[]> {
@@ -178,6 +181,9 @@ async function loadPostData(
   const wordCount = content.trim().split(/\s+/).length;
   const readingTime = Math.ceil(wordCount / 200);
 
+  // 콘텐츠에서 URL 추출
+  const referenceUrls = extractUrlsFromMarkdown(content);
+
   // 메타데이터 평탄화
   const post: Post = {
     slug: originalSlug,
@@ -195,6 +201,7 @@ async function loadPostData(
     seriesTitle: data.seriesTitle || null,
     seriesDescription: data.seriesDescription || null,
     seriesOrder: data.seriesOrder || null,
+    referenceUrls, // 추출된 URL 목록 추가
   };
 
   return post;

@@ -69,7 +69,7 @@ return (
 
 ## 간단한 해결책: 조건부 로직을 데이터로 표현하기
 
-이 문제를 해결하기 위한 패턴을 설계했다. 함수형 프로그래밍의 `cond` 구조에서 영감을 받았지만, 리액트 개발자가 직관적으로 이해할 수 있게 재해석했다.
+이 문제를 해결하기 위한 패턴을 설계했다. 함수형 프로그래밍의 [cond](https://elixir-ko.github.io/getting_started/5.html) 구조에서 영감을 받았지만, 리액트 개발자가 직관적으로 이해할 수 있게 재해석했다.
 
 ```tsx
 function matchCondition<T>({ conditions, defaultValue }: {
@@ -203,7 +203,3 @@ JSX의 삼항 연산자 중첩은 React 개발자들 사이에서 흔한 안티�
 **코드의 명확성이 개발 속도와 품질에 미치는 영향을 과소평가해서는 안 된다.**
 
 ---
-
-## 참고자료
-
-- [Elixir cond 문서](https://elixir-ko.github.io/getting_started/5.html)
