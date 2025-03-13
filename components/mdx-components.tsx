@@ -5,6 +5,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Highlight } from 'prism-react-renderer';
 
+// 복사 버튼 컴포넌트 추가
+import { CopyButton } from './ui/copy-button';
+
 // 테마 정의
 const nebulaTheme = {
   plain: {
@@ -53,7 +56,9 @@ const nebulaTheme = {
 
 // 코드 블록 래퍼 컴포넌트
 const Pre = ({ children }: { children: React.ReactNode }): JSX.Element => (
-  <pre className="overflow-auto p-4 rounded-lg bg-[#1b1e2b]">{children}</pre>
+  <pre className="overflow-auto p-4 rounded-lg bg-[#1b1e2b] relative">
+    {children}
+  </pre>
 );
 
 // 코드 컴포넌트 인터페이스
@@ -78,7 +83,7 @@ const Code = ({ children, className }: CodeProps): JSX.Element => {
 
   // 코드 블록
   return (
-    <div>
+    <div className="relative">
       <Highlight
         code={children}
         language={rawLanguage || 'text'}
@@ -86,6 +91,7 @@ const Code = ({ children, className }: CodeProps): JSX.Element => {
       >
         {({ className, style, tokens, getLineProps, getTokenProps }) => (
           <Pre>
+            <CopyButton text={children} />
             <code
               className={className}
               style={{ ...style, backgroundColor: 'transparent' }}
