@@ -4,7 +4,6 @@ import type { JSX } from 'react';
 
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
-import { RefreshCw } from 'lucide-react';
 import { useState, useCallback } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -220,9 +219,7 @@ export function MainNavigation(): JSX.Element {
         title="새로운 테마로 변경"
         disabled={isChanging}
       >
-        <RefreshCw
-          className={`h-4 w-4 text-primary ${isChanging ? 'animate-spin' : ''}`}
-        />
+        Color
       </Button>
 
       <MenubarMenu>
