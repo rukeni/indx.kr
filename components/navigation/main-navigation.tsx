@@ -210,22 +210,6 @@ export function MainNavigation(): JSX.Element {
     }
   };
 
-  // 테마 모드가 변경될 때 테마를 다시 적용
-  // useEffect(() => {
-  //   const storedTheme = localStorage.getItem('custom-theme');
-
-  //   if (storedTheme) {
-  //     try {
-  //       const parsedTheme = JSON.parse(storedTheme);
-  //       const themeMode = getCurrentThemeMode();
-
-  //       applyThemeToCssVariables(parsedTheme[themeMode]);
-  //     } catch (error) {
-  //       console.error('저장된 테마를 파싱하는 중 오류가 발생했습니다:', error);
-  //     }
-  //   }
-  // }, [resolvedTheme, applyThemeToCssVariables, getCurrentThemeMode]);
-
   return (
     <Menubar className="px-2 lg:px-4 border border-foreground rounded-none">
       <Button
