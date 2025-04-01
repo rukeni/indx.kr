@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import { useMemo, useCallback } from 'react';
 import { ChevronDown, Search, Clock, BookOpen } from 'lucide-react';
 
+import given from '@/lib/given';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -139,19 +140,20 @@ const BlogTable: FC<BlogTableProps> = ({ posts }): JSX.Element => {
   }, [posts, filterPost, sortConfig]);
 
   const getCategoryLabel = (category: string): string => {
-    switch (category) {
-      case 'tech':
-        return '기술';
+    const isTech = () => category === 'tech';
+    const isLife = () => category === 'life';
+    const isReview = () => category === 'review';
 
-      case 'life':
-        return '일상';
+    const categoryLabel = given({
+      cases: [
+        { when: isTech, then: '기술' },
+        { when: isLife, then: '일상' },
+        { when: isReview, then: '리뷰' },
+      ],
+      defaultValue: category,
+    });
 
-      case 'review':
-        return '리뷰';
-
-      default:
-        return category;
-    }
+    return categoryLabel;
   };
 
   return (

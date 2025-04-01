@@ -3,6 +3,8 @@
 import fs from 'fs';
 import path from 'path';
 
+import given from './given';
+
 const POSTS_PATH = path.join(process.cwd(), 'app/blog');
 
 // 캐싱을 위한 인터페이스 및 구현
@@ -43,20 +45,32 @@ class MemoryCache<T> implements Cache<T> {
   }
 
   has(key: string): boolean {
-    if (!this.cache.has(key)) return false;
+    const cacheKeyExists = () => !this.cache.has(key);
+    const itemExists = () => {
+      const item = this.cache.get(key);
 
-    const item = this.cache.get(key);
+      return !item;
+    };
+    const isExpired = () => {
+      const item = this.cache.get(key);
 
-    if (!item) return false;
+      if (Date.now() - item!.timestamp > this.ttl) {
+        this.cache.delete(key);
 
-    // TTL 체크
-    if (Date.now() - item.timestamp > this.ttl) {
-      this.cache.delete(key);
+        return true;
+      }
 
       return false;
-    }
+    };
 
-    return true;
+    return given({
+      cases: [
+        { when: cacheKeyExists, then: false },
+        { when: itemExists, then: false },
+        { when: isExpired, then: false },
+      ],
+      defaultValue: true,
+    });
   }
 
   clear(): void {
