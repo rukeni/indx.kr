@@ -1,25 +1,25 @@
-function given<T>({
-  cases,
-  defaultValue,
-}: {
-  cases: Array<{
-    when: boolean | (() => boolean);
-    then: T;
-  }>;
+type Case<T> = {
+  when: boolean | (() => boolean);
+  then: T;
+};
+
+type GivenConfig<T> = {
+  cases: Case<T>[];
   defaultValue: T;
-}): T {
-  if (cases.length === 0) return defaultValue;
+};
 
-  for (const { when, then } of cases) {
-    if (typeof when === 'boolean' && when) {
-      return then;
-    }
-    if (typeof when === 'function' && when()) {
-      return then;
-    }
-  }
+function evaluateCondition(condition: boolean | (() => boolean)): boolean {
+  return typeof condition === 'boolean' ? condition : condition();
+}
 
-  return defaultValue;
+function findMatchingCase<T>(cases: Case<T>[]): Case<T> | null {
+  return cases.find((caseItem) => evaluateCondition(caseItem.when)) || null;
+}
+
+function given<T>({ cases, defaultValue }: GivenConfig<T>): T {
+  const matchingCase = findMatchingCase(cases);
+
+  return matchingCase ? matchingCase.then : defaultValue;
 }
 
 export default given;
