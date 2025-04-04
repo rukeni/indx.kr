@@ -17,6 +17,11 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'indx.kr',
   description: 'A blog about technology, life, and everything in between.',
+  alternates: {
+    types: {
+      'application/rss+xml': '/api/feed.xml',
+    },
+  },
 };
 
 export default function RootLayout({
@@ -26,6 +31,14 @@ export default function RootLayout({
 }): JSX.Element {
   return (
     <html lang="ko" suppressHydrationWarning>
+      <head>
+        <link
+          rel="alternate"
+          type="application/rss+xml"
+          title="RSS Feed for indx.kr"
+          href="/api/feed.xml"
+        />
+      </head>
       <body className={inter.className}>
         <ThemeProvider
           attribute="class"
@@ -43,6 +56,14 @@ export default function RootLayout({
                 </Link>
                 <MainNavigation />
                 <div className="flex justify-center gap-4 mx-4">
+                  <a
+                    href="/api/feed.xml"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-600 hover:text-gray-900"
+                  >
+                    RSS
+                  </a>
                   <a
                     href="https://github.com/rukeni/indx.kr"
                     target="_blank"
