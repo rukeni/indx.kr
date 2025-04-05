@@ -17,9 +17,38 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'indx.kr',
   description: 'A blog about technology, life, and everything in between.',
+  keywords: ['blog', 'technology', 'programming', 'life', 'development', 'web'],
+  authors: [{ name: 'indx.kr', url: 'https://indx.kr' }],
+  creator: 'indx.kr',
+  publisher: 'indx.kr',
   alternates: {
     types: {
       'application/rss+xml': '/api/feed.xml',
+    },
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'ko_KR',
+    url: 'https://indx.kr',
+    title: 'indx.kr',
+    description: 'A blog about technology, life, and everything in between.',
+    siteName: 'indx.kr',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'indx.kr',
+    description: 'A blog about technology, life, and everything in between.',
+    creator: '@indx_kr',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
     },
   },
 };
@@ -60,7 +89,7 @@ export default function RootLayout({
                     href="/api/feed.xml"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-gray-600 hover:text-gray-900"
+                    className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
                   >
                     RSS
                   </a>
@@ -68,7 +97,7 @@ export default function RootLayout({
                     href="https://github.com/rukeni/indx.kr"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-gray-600 hover:text-gray-900"
+                    className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
                   >
                     GitHub
                   </a>

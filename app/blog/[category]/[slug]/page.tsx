@@ -1,4 +1,5 @@
 import type { JSX } from 'react';
+import type { Metadata } from 'next';
 
 import { Suspense } from 'react';
 import dynamic from 'next/dynamic';
@@ -65,6 +66,48 @@ function LoadingContent(): JSX.Element {
       </div>
     </div>
   );
+}
+
+export async function generateMetadata({
+  params,
+}: PostPageProps): Promise<Metadata> {
+  const { category, slug } = await params;
+  const post = await getPostBySlug(category, decodeURIComponent(slug));
+
+  if (!post) {
+    return {};
+  }
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://indx.kr';
+  const postUrl = `${siteUrl}/blog/${category}/${slug}`;
+  const ogImageUrl = `${siteUrl}/og-image.png`;
+
+  return {
+    title: `${post.title} | indx.kr`,
+    description: post.description,
+    openGraph: {
+      title: post.title,
+      description: post.description,
+      url: postUrl,
+      type: 'article',
+      publishedTime: post.date,
+      authors: ['indx.kr'],
+      images: [
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: post.title,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.title,
+      description: post.description,
+      images: [ogImageUrl],
+    },
+  };
 }
 
 export default async function PostPage({

@@ -38,6 +38,9 @@ export async function GET() {
         },
       ],
       date: new Date(post.date),
+      category: [{ name: post.category }],
+      published: new Date(post.date),
+      image: `${siteUrl}/og-image.png`,
     });
   });
 
