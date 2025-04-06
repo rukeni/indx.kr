@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 import { notFound } from 'next/navigation';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 
+import { PostNavigation } from '@/components/post-navigation';
 import { MDXComponents } from '@internal/components/mdx-components';
 import { UrlBookmarkList } from '@/components/ui/url-bookmark-list';
 import {
@@ -16,6 +17,7 @@ import {
   getPostBySlug,
   extractTableOfContents,
   getAllPosts,
+  getAdjacentPosts,
 } from '@internal/lib/blog';
 
 // 클라이언트 컴포넌트를 동적으로 임포트
@@ -138,6 +140,9 @@ export default async function PostPage({
     }
   }
 
+  // 이전/다음 글 가져오기
+  const adjacentPosts = await getAdjacentPosts(category, post.date, post.slug);
+
   return (
     <div className="container mx-auto py-12 px-4">
       <div className="flex flex-col lg:flex-row gap-8">
@@ -174,6 +179,12 @@ export default async function PostPage({
               </div>
             )}
           </div>
+
+          {/* 이전/다음 글 네비게이션 */}
+          <PostNavigation
+            previous={adjacentPosts.previous}
+            next={adjacentPosts.next}
+          />
         </article>
 
         {/* 시리즈 목차 - 시리즈가 있는 경우에만 표시 */}

@@ -373,3 +373,56 @@ function findParentHeader(
 
   return null;
 }
+
+export interface AdjacentPost {
+  title: string;
+  slug: string;
+  category: string;
+  koreanSlug?: string;
+}
+
+export async function getAdjacentPosts(
+  category: string,
+  currentDate: string,
+  currentSlug: string,
+): Promise<{ previous: AdjacentPost | null; next: AdjacentPost | null }> {
+  const allPosts = await getAllPosts();
+
+  // 날짜순으로 정렬 (오래된 글이 앞쪽으로 오도록 변경)
+  const sortedPosts = allPosts.sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+  );
+
+  const currentIndex = sortedPosts.findIndex(
+    (post) =>
+      post.date === currentDate &&
+      post.category === category &&
+      post.slug === currentSlug,
+  );
+
+  if (currentIndex === -1) {
+    return { previous: null, next: null };
+  }
+
+  const previous = sortedPosts[currentIndex - 1] || null;
+  const next = sortedPosts[currentIndex + 1] || null;
+
+  return {
+    previous: previous
+      ? {
+          title: previous.title,
+          slug: previous.slug,
+          category: previous.category,
+          koreanSlug: previous.koreanSlug,
+        }
+      : null,
+    next: next
+      ? {
+          title: next.title,
+          slug: next.slug,
+          category: next.category,
+          koreanSlug: next.koreanSlug,
+        }
+      : null,
+  };
+}
