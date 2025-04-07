@@ -5,6 +5,7 @@ import type { JSX } from 'react';
 import { useTheme } from 'next-themes';
 import { Moon, Sun, Monitor } from 'lucide-react';
 
+import given from '@internal/lib/given';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -15,6 +16,16 @@ import {
 
 export function ThemeToggle(): JSX.Element {
   const { theme, setTheme } = useTheme();
+
+  const themeAccent = given({
+    cases: [
+      {
+        when: !!theme,
+        then: 'bg-accent',
+      },
+    ],
+    defaultValue: '',
+  });
 
   return (
     <DropdownMenu>
@@ -28,7 +39,7 @@ export function ThemeToggle(): JSX.Element {
       <DropdownMenuContent align="end">
         <DropdownMenuItem
           onClick={() => setTheme('light')}
-          className={theme === 'light' ? 'bg-accent' : ''}
+          className={themeAccent}
         >
           <Sun className="mr-2 h-4 w-4" />
           라이트
@@ -36,7 +47,7 @@ export function ThemeToggle(): JSX.Element {
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => setTheme('dark')}
-          className={theme === 'dark' ? 'bg-accent' : ''}
+          className={themeAccent}
         >
           <Moon className="mr-2 h-4 w-4" />
           다크
@@ -44,7 +55,7 @@ export function ThemeToggle(): JSX.Element {
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => setTheme('system')}
-          className={theme === 'system' ? 'bg-accent' : ''}
+          className={themeAccent}
         >
           <Monitor className="mr-2 h-4 w-4" />
           시스템
