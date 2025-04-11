@@ -8,7 +8,7 @@ export default async function BlogPage(): Promise<JSX.Element> {
 
   return (
     <div className="max-w-6xl mx-auto py-12 px-4">
-      <h1 className="text-4xl font-bold mb-8">Blog</h1>
+      <h1 className="text-4xl font-bold mb-8">아티클 목록</h1>
       <BlogTable posts={posts} />
     </div>
   );
