@@ -48,3 +48,5 @@ node_modules/
 /playwright/.cache/
 test-examples/*.png
 repomix-output.txt
+.qodo
+.cursor
