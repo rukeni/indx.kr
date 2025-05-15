@@ -24,7 +24,7 @@ export function PostNavigation({
         when: Boolean(previous),
         then: (
           <Link
-            href={`/blog/${previous!.category}/${previous!.koreanSlug || previous!.slug}`}
+            href={`/blog/${previous?.category}/${previous?.koreanSlug || previous?.slug}`}
             className="flex items-center group max-w-[45%]"
           >
             <ChevronLeft className="w-4 h-4 mr-2 transition-transform group-hover:-translate-x-1 flex-shrink-0" />
@@ -33,10 +33,10 @@ export function PostNavigation({
                 이전 글
               </div>
               <div className="text-sm text-gray-500 dark:text-gray-400 capitalize">
-                {previous!.category}
+                {previous?.category}
               </div>
               <div className="font-medium group-hover:text-primary truncate">
-                {previous!.title}
+                {previous?.title}
               </div>
             </div>
           </Link>
@@ -52,7 +52,7 @@ export function PostNavigation({
         when: Boolean(next),
         then: (
           <Link
-            href={`/blog/${next!.category}/${next!.koreanSlug || next!.slug}`}
+            href={`/blog/${next?.category}/${next?.koreanSlug || next?.slug}`}
             className="flex items-center text-right group max-w-[45%] ml-auto"
           >
             <div className="overflow-hidden">
@@ -60,10 +60,10 @@ export function PostNavigation({
                 다음 글
               </div>
               <div className="text-sm text-gray-500 dark:text-gray-400 capitalize">
-                {next!.category}
+                {next?.category}
               </div>
               <div className="font-medium group-hover:text-primary truncate">
-                {next!.title}
+                {next?.title}
               </div>
             </div>
             <ChevronRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1 flex-shrink-0" />
